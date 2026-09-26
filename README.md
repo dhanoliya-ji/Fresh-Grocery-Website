@@ -8,17 +8,36 @@ A 3D, interactive storefront for **Freshly**, a fictional neighbourhood grocery 
 
 ## What's inside
 
-- **3D hero**: real produce photos cut out and rendered in WebGL with fake volume lighting, soft contact shadows and mouse parallax. Click a fruit to jump to its aisle.
-- **Walk the aisles**: 8 category shelves with 3D tilt and glare, and the product pops out of the card.
-- **Fresh deals**: a 3D ring carousel (drag, swipe or arrows) with a live countdown, plus bundle boxes.
-- **Shop**: 52 products with category chips, organic/sale toggles, price slider, sorting and live search (press `/`).
-- **Product view**: drag-to-rotate photo, nutrition facts, weight options and "pairs well with".
-- **Basket drawer**: fly-to-cart animation, 3D basket pile and a free-delivery progress bar.
-- **Recipe of the day**: ingredients orbit the plate, and one click adds them all.
-- **How it works**: a delivery van that drives as you scroll, and a ZIP-code checker.
-- **Demo checkout**: address → delivery window → card preview → order confirmation with confetti.
-- Farms parallax section, reviews and newsletter signup (code `FRESH10`).
-- Respects `prefers-reduced-motion` and works on phones.
+### 3D and animation
+
+- **3D hero**: real produce photos cut out and rendered in WebGL with fake volume lighting, glinting water droplets and soft contact shadows. The fruit drops in and bounces after the loader. Click one to squeeze it into a juice splash and jump to its aisle. The light moves from a low morning sun to noon as you scroll.
+- **3D store walk**: a pinned section where scrolling walks you down a real 3D aisle, with shelves stocked with every product, hanging aisle signs and price tags. Move the mouse to look around, and click a product to open it.
+- **3D store map**: an isometric floor plan built from CSS 3D boxes. It tilts toward the mouse, a little shopper wanders the aisles, and clicking an aisle shops it.
+- **Walk the aisles**: 8 category shelves with 3D tilt and glare.
+- **Fresh deals**: a 3D ring carousel with a flip-clock countdown, plus bundle boxes.
+- Headings rise word by word, the recipe ingredients fly onto the plate as you scroll, and the delivery van drives to a house, drops a parcel and drives off.
+- Custom cursor, magnetic buttons, rolling odometer prices and an apple-into-basket page loader.
+
+### Shopping
+
+- **Shop**: 52 products with filters, sorting, live search (press `/`) and **voice search** ("add two bananas", "show bakery").
+- **Freshness meter** on fresh products ("Picked 6h ago").
+- **Compare** up to three products side by side, with the best value highlighted.
+- **Buy again / recently viewed** row, plus one-click reorder of the last basket.
+- **Basket drawer**: items fall into the basket with real physics. Promo codes `FRESH10`, `FREESHIP` and `HELLO5` work, and there's a free-delivery progress bar.
+- **Demo checkout**: address → delivery window → card preview, with a **scratch card** that reveals a surprise discount.
+- **Live order tracking**: an animated map with the van driving your route, an ETA and status steps. It runs about 12× faster for the demo.
+
+### Extras
+
+- **Daily prize wheel**: a tilted 3D wheel, one spin a day, and the prize goes straight into the basket.
+- **Smoothie builder**: drag fruit into a glass blender, blend it, and the drink takes the mixed colour of the fruit. Then add the ingredients.
+- **Meal planner**: drag dinners onto the week and it writes a combined shopping list.
+- **Seasonal mode**: picks the season from the date, with falling leaves, snow, blossom or summer sparkles, and seasonal picks. You can preview any season.
+- **Evening market theme**: a warm, lamp-lit dark theme. The 3D scenes relight too.
+- **Farmer profiles**: eight growers with their stories, practices and products.
+- Live activity popups on desktop, clearly labelled as demo data.
+- Respects `prefers-reduced-motion` and works on phones. Everything is saved in the browser (localStorage), so nothing needs a server.
 
 ## Run locally
 
@@ -37,6 +56,7 @@ Everything the shop sells is in [src/data.js](src/data.js):
 - `CATEGORIES`: aisles (name, blurb, colour, hero image)
 - `PRODUCTS`: `P(id, name, category, price, unit, image, { old, badges, rating, origin, desc, kcal, … })`
 - `DEALS`, `BUNDLES`, `RECIPE`, `REVIEWS`
+- `FARMS` (grower profiles), `MEALS` (meal planner), `BLEND` (smoothie colours), `SEASONS`, `PRIZES` (daily wheel)
 
 Images live in `public/img/`:
 

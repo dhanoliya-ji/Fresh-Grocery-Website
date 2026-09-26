@@ -143,3 +143,65 @@ export const REVIEWS = [
 ];
 
 export const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+
+// ---------------- growers (farmer profiles) ----------------
+export const FARMS = [
+  { id: 'brennan', name: 'Brennan Family Orchards', farmer: 'Colleen Brennan', place: 'Hudson Valley, NY', miles: 90, since: 1962, acres: 140, img: 'p/apples', products: ['apples'], practices: ['Low-spray', 'Pollinator hedges', 'Hand-picked'], quote: 'An apple should snap when you bite it. If it bends, it isn’t ours.', story: 'Three generations of Brennans have worked the same hillside above the Hudson. Colleen took over from her father in 2009 and replanted half the orchard with Honeycrisp, which she still picks by hand at dawn so the fruit stays cold and crisp on the way to you.' },
+  { id: 'stoltzfus', name: 'Stoltzfus Greenhouse', farmer: 'Eli Stoltzfus', place: 'Lancaster, PA', miles: 150, since: 1988, acres: 12, img: 'p/tomatoes', products: ['tomatoes', 'cucumber', 'lettuce'], practices: ['Rain-water irrigation', 'No pesticides', 'Vine-ripened'], quote: 'We let the vine decide when the tomato is ready.', story: 'Eli’s glasshouses run on collected rain water and a wood-chip boiler. Tomatoes ripen fully on the vine, then travel in padded crates so they arrive the way they left the plant.' },
+  { id: 'meadowhen', name: 'Meadow Hen Farm', farmer: 'Ruth & Amos King', place: 'Amish Country, PA', miles: 160, since: 1995, acres: 60, img: 'p/eggs', products: ['eggs'], practices: ['Pasture-raised', '108 sq ft per hen', 'Mobile coops'], quote: 'Happy hens lay the orange yolks. It really is that simple.', story: 'The Kings move their coops across the pasture every few days so the hens always have fresh grass, bugs and sunshine. The result is a deep orange yolk that chefs across the city ask for by name.' },
+  { id: 'pinebarrens', name: 'Pine Barrens Berry Farm', farmer: 'Marisol Vega', place: 'Hammonton, NJ', miles: 60, since: 2004, acres: 85, img: 'p/blueberries', products: ['blueberries', 'corn'], practices: ['Certified organic', 'Drip irrigation', 'Cover crops'], quote: 'Blueberries were born in these sandy soils. We just look after them.', story: 'Hammonton calls itself the blueberry capital of the world, and Marisol’s bushes are some of the oldest in town. In late summer the same fields give us the sweet corn in our BBQ kit.' },
+  { id: 'greenhollow', name: 'Green Hollow Dairy', farmer: 'The Lambert family', place: 'Vermont', miles: 190, since: 1931, acres: 320, img: 'p/cheese', products: ['milk', 'cheese', 'butter'], practices: ['Grass-fed', 'Small herd', 'Cave-aged cheese'], quote: 'Grass in, flavour out.', story: 'Forty-two Jersey cows graze rolling Vermont pasture from April to November. Their milk is bottled on the farm, and the best of it becomes a 12-month cheddar aged in a stone cave dug into the hill.' },
+  { id: 'kennett', name: 'Kennett Mushroom Co.', farmer: 'Daniel Okafor', place: 'Kennett Square, PA', miles: 120, since: 2011, acres: 4, img: 'p/mushrooms', products: ['mushrooms'], practices: ['Compost-grown', 'Zero waste', 'Harvested daily'], quote: 'Mushrooms grow overnight, so we harvest every single morning.', story: 'Kennett Square grows more than half of America’s mushrooms. Daniel’s small farm focuses on specialty varieties grown on recycled straw and coffee grounds, then turns the spent compost into soil for local gardens.' },
+  { id: 'catskill', name: 'Catskill Bee Collective', farmer: 'June Harrow', place: 'Catskills, NY', miles: 110, since: 2015, acres: 30, img: 'p/honey', products: ['honey'], practices: ['Raw & unfiltered', 'Wildflower meadows', 'Treatment-free'], quote: 'Every jar tastes a little different, because every week the flowers change.', story: 'June keeps 90 hives scattered through wildflower meadows in the Catskill mountains. The honey is never heated or filtered, so it keeps the pollen, the aroma and the taste of the season.' },
+  { id: 'rootrow', name: 'Root & Row Farm', farmer: 'Sam & Priya Patel', place: 'Upstate NY', miles: 170, since: 2017, acres: 25, img: 'p/carrots', products: ['carrots', 'potatoes', 'onions'], practices: ['Regenerative', 'No-till beds', 'Solar-powered cooling'], quote: 'Healthy soil grows sweeter roots.', story: 'Sam and Priya left city jobs to farm with regenerative methods: no-till beds, compost and cover crops. Their carrots are harvested after the first frost, when the cold turns their starch into sugar.' },
+];
+
+// ---------------- meal planner ----------------
+export const MEALS = [
+  { id: 'salad', name: 'Sunny Summer Salad', img: 's/salad', kcal: 380, time: '15 min', items: [['lettuce', 1], ['tomatoes', 1], ['cucumber', 1], ['avocados', 1], ['lemons', 1], ['oliveoil', 1], ['cheese', 1]] },
+  { id: 'salmon', name: 'Lemon Salmon & Greens', img: 'p/salmon', kcal: 520, time: '25 min', items: [['salmon', 1], ['spinach', 1], ['lemons', 1], ['potatoes', 1], ['garlic', 1]] },
+  { id: 'steak', name: 'Steak Night', img: 'p/steak', kcal: 780, time: '30 min', items: [['steak', 1], ['potatoes', 1], ['mushrooms', 1], ['butter', 1], ['garlic', 1]] },
+  { id: 'pasta', name: 'Pasta Primavera', img: 'p/pasta', kcal: 610, time: '20 min', items: [['pasta', 1], ['tomatoes', 1], ['peppers', 1], ['garlic', 1], ['oliveoil', 1], ['cheese', 1]] },
+  { id: 'chicken', name: 'Sunday Roast Chicken', img: 'p/chicken', kcal: 690, time: '90 min', items: [['chicken', 1], ['potatoes', 1], ['carrots', 1], ['onions', 1], ['lemons', 1], ['garlic', 1]] },
+  { id: 'shrimp', name: 'Garlic Shrimp Stir-fry', img: 'p/shrimp', kcal: 540, time: '20 min', items: [['shrimp', 1], ['rice', 1], ['peppers', 1], ['broccoli', 1], ['garlic', 1]] },
+  { id: 'risotto', name: 'Mushroom Risotto', img: 'p/mushrooms', kcal: 590, time: '40 min', items: [['rice', 1], ['mushrooms', 1], ['onions', 1], ['cheese', 1], ['butter', 1]] },
+  { id: 'brunch', name: 'Breakfast for Dinner', img: 's/breakfast', kcal: 560, time: '15 min', items: [['eggs', 1], ['bread', 1], ['butter', 1], ['avocados', 1], ['juice', 1]] },
+];
+
+// ---------------- smoothie builder ----------------
+// colour is the flesh / juice colour used to mix the drink; tag names the smoothie
+export const BLEND = {
+  strawberries: { color: '#e8394a', tag: 'Berry', kcal: 50, vitC: 90 },
+  bananas: { color: '#f3dd8a', tag: 'Creamy', kcal: 105, vitC: 15 },
+  blueberries: { color: '#5a3f99', tag: 'Blue', kcal: 60, vitC: 20 },
+  mango: { color: '#ffb02e', tag: 'Tropical', kcal: 100, vitC: 70 },
+  pineapple: { color: '#f7d33c', tag: 'Island', kcal: 80, vitC: 95 },
+  kiwi: { color: '#86c13d', tag: 'Green', kcal: 45, vitC: 110 },
+  oranges: { color: '#ff9616', tag: 'Sunrise', kcal: 60, vitC: 100 },
+  apples: { color: '#f1dca0', tag: 'Orchard', kcal: 70, vitC: 10 },
+  avocados: { color: '#a3c96b', tag: 'Velvet', kcal: 120, vitC: 12 },
+  lemons: { color: '#fff06a', tag: 'Zesty', kcal: 15, vitC: 60 },
+};
+
+// ---------------- seasons ----------------
+export const SEASONS = {
+  spring: { name: 'Spring', icon: '🌸', line: 'Spring greens are in', picks: ['strawberries', 'lettuce', 'spinach', 'cucumber', 'kiwi', 'eggs'] },
+  summer: { name: 'Summer', icon: '☀️', line: 'Summer fruit is at its peak', picks: ['watermelon', 'blueberries', 'corn', 'tomatoes', 'peppers', 'lemonade'] },
+  autumn: { name: 'Autumn', icon: '🍂', line: 'Autumn harvest is here', picks: ['apples', 'grapes', 'potatoes', 'mushrooms', 'carrots', 'onions'] },
+  winter: { name: 'Winter', icon: '❄️', line: 'Winter warmers are in', picks: ['oranges', 'lemons', 'potatoes', 'tea', 'chocolate', 'coffee'] },
+};
+
+// ---------------- daily prize wheel ----------------
+export const PRIZES = [
+  { label: '10% off', short: '10%', type: 'pct', value: 10, color: '#2e9e5b', weight: 20 },
+  { label: 'Free delivery', short: 'Free\ndelivery', type: 'ship', value: 0, color: '#ffc94a', weight: 18 },
+  { label: '$5 off', short: '$5', type: 'amt', value: 5, color: '#e8453c', weight: 12 },
+  { label: 'Free croissants', short: 'Free\ncroissants', type: 'item', id: 'croissant', color: '#ff8a3d', weight: 10 },
+  { label: '15% off', short: '15%', type: 'pct', value: 15, color: '#1f7a4d', weight: 10 },
+  { label: '$3 off', short: '$3', type: 'amt', value: 3, color: '#f7b2a4', weight: 16 },
+  { label: 'Free bananas', short: 'Free\nbananas', type: 'item', id: 'bananas', color: '#f3dd8a', weight: 10 },
+  { label: '20% off', short: '20%', type: 'pct', value: 20, color: '#8a5cc2', weight: 4 },
+];
+
+// names for the (clearly demo) live activity popups
+export const SHOPPERS = [['Maya', 'Astoria'], ['Luis', 'Harlem'], ['Grace', 'Park Slope'], ['Omar', 'Hoboken'], ['Hannah', 'Williamsburg'], ['Kenji', 'Long Island City'], ['Zoe', 'Upper West Side'], ['Andre', 'Bed-Stuy'], ['Fatima', 'Jersey City'], ['Leo', 'Greenpoint'], ['Sofia', 'Chelsea'], ['Ben', 'Forest Hills']];
