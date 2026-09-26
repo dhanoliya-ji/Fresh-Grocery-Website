@@ -1,5 +1,6 @@
 // 3D tilt with glare: the card rotates toward the pointer; children with translateZ pop out.
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+import { reducedMotion } from './prefs.js';
+const reduced = reducedMotion();
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 export function tilt(el, { max = 12, scale = 1.02 } = {}) {

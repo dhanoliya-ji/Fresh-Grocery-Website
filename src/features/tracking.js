@@ -7,6 +7,7 @@ const SHOW_FOR = 200;
 const ROUTE = 'M110 310 L110 210 L310 210 L310 110 L510 110';
 
 export function initTracking({ app, modal, headerBtn }) {
+  const L = app.t;
   const svg = modal.querySelector('#trMap');
   const etaEl = modal.querySelector('#trEta');
   const statusEl = modal.querySelector('#trStatus');
@@ -55,7 +56,7 @@ export function initTracking({ app, modal, headerBtn }) {
     headerBtn.hidden = !live;
     if (live) {
       const t = elapsed(o);
-      headerBtn.querySelector('b').textContent = t >= T.arrive ? 'Delivered' : `${Math.max(1, Math.ceil(((T.arrive - t) / T.arrive) * 30))} min`;
+      headerBtn.querySelector('b').textContent = t >= T.arrive ? L('Delivered') : L('{n} min', { n: Math.max(1, Math.ceil(((T.arrive - t) / T.arrive) * 30)) });
     }
     if (!modal.hidden && order) {
       const t = elapsed(order);
@@ -72,13 +73,13 @@ export function initTracking({ app, modal, headerBtn }) {
       van.classList.toggle('moving', stage === 2);
       path.style.strokeDashoffset = `${len * (1 - k)}`;
       const mins = Math.max(1, Math.ceil(((T.arrive - t) / T.arrive) * 30));
-      etaEl.textContent = stage === 3 ? 'Delivered ✓' : `${mins} min`;
-      statusEl.textContent = ['Order confirmed', 'Picking your groceries', 'On the way to you', 'Delivered. Enjoy!'][stage];
+      etaEl.textContent = stage === 3 ? L('Delivered ✓') : L('{n} min', { n: mins });
+      statusEl.textContent = L(['Order confirmed', 'Picking your groceries', 'On the way to you', 'Delivered. Enjoy!'][stage]);
       subEl.textContent = [
-        'We’ve sent your order to the store.',
-        'Sam is choosing the ripest produce for you.',
-        `Sam is ${Math.max(0.1, (1 - k) * 2.4).toFixed(1)} miles away in the Freshly e-van.`,
-        'Left at your door. Thanks for shopping with Freshly!',
+        L('We’ve sent your order to the store.'),
+        L('Sam is choosing the ripest produce for you.'),
+        L('Sam is {n} miles away in the Freshly e-van.', { n: Math.max(0.1, (1 - k) * 2.4).toFixed(1) }),
+        L('Left at your door. Thanks for shopping with Freshly!'),
       ][stage];
       if (stage === 3 && !celebrated) {
         celebrated = true;
@@ -90,10 +91,10 @@ export function initTracking({ app, modal, headerBtn }) {
   requestAnimationFrame(frame);
 
   function open(o = latest()) {
-    if (!o) return app.toast('No orders yet. Your next one will show up here.');
+    if (!o) return app.toast(L('No orders yet. Your next one will show up here.'));
     order = o;
     celebrated = elapsed(o) >= T.arrive;
-    numEl.textContent = `Order ${o.num}`;
+    numEl.textContent = `${L('Order')} ${o.num}`;
     itemsEl.innerHTML = o.items.slice(0, 10).map(([id]) => (app.byId[id] ? app.img(app.byId[id]) : '')).join('') + (o.items.length > 10 ? `<span>+${o.items.length - 10}</span>` : '');
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -106,7 +107,7 @@ export function initTracking({ app, modal, headerBtn }) {
   modal.querySelector('[data-close]').addEventListener('click', close);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) close();
-    if (e.target.closest('[data-demo]')) app.toast(`${e.target.closest('[data-demo]').dataset.demo} (demo)`);
+    if (e.target.closest('[data-demo]')) app.toast(`${L(e.target.closest('[data-demo]').dataset.demo)} (${L('demo')})`);
   });
   return { open, close, get isOpen() { return !modal.hidden; } };
 }

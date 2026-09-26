@@ -147,9 +147,9 @@ export function initWalk({ section, canvas, tip, nowEl, ticksEl, app, CATEGORIES
         g.roundRect(8, 8, 150, h - 16, [40, 0, 0, 40]);
         g.fill();
         g.fillStyle = '#1f2a22';
-        g.font = '700 42px Inter, sans-serif';
-        g.fillText(`AISLE ${i + 1}`, 190, 92);
-        g.font = '800 96px Fraunces, Georgia, serif';
+        g.font = '700 42px Inter, "Noto Sans Devanagari", sans-serif';
+        g.fillText(app.t('AISLE {n}', { n: i + 1 }), 190, 92);
+        g.font = '800 96px Fraunces, "Noto Serif Devanagari", Georgia, serif';
         g.fillText(c.name, 186, 196);
         g.font = '700 110px Fraunces, Georgia, serif';
         g.fillStyle = '#ffffff';
@@ -169,9 +169,9 @@ export function initWalk({ section, canvas, tip, nowEl, ticksEl, app, CATEGORIES
       g.textAlign = 'center';
       g.font = '800 120px Fraunces, Georgia, serif';
       g.fillText('Freshly', w / 2, 230);
-      g.font = '600 46px Inter, sans-serif';
+      g.font = '600 46px Inter, "Noto Sans Devanagari", sans-serif';
       g.fillStyle = '#ffc94a';
-      g.fillText('Checkout this way →', w / 2, 330);
+      g.fillText(app.t('Checkout this way →'), w / 2, 330);
     });
     const endWall = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.3), new THREE.MeshBasicMaterial({ map: endTex, toneMapped: false }));
     endWall.position.set(0, 1.7, -L - 0.4);
@@ -278,7 +278,7 @@ export function initWalk({ section, canvas, tip, nowEl, ticksEl, app, CATEGORIES
         g.fillStyle = '#1f2a22';
         g.font = '800 48px Inter, sans-serif';
         g.fillText(app.money(p.price), 28, 56);
-        g.font = '500 20px Inter, sans-serif';
+        g.font = '500 20px Inter, "Noto Sans Devanagari", sans-serif';
         g.fillStyle = '#6b746d';
         g.fillText(p.name.slice(0, 22), 28, 84);
       });

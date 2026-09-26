@@ -1,5 +1,6 @@
 import { SEASONS, byId } from '../data.js';
 import { load, save } from '../cart.js';
+import { isBlocked, onPrefs } from '../prefs.js';
 
 // Seasonal mode: picks the season from today's date (northern hemisphere), lets visitors preview
 // the others, and decorates the hero with falling leaves, snow, blossom petals or summer sparkles.
@@ -119,16 +120,17 @@ export function initSeason({ app, canvas, banner }) {
     const S = SEASONS[season];
     document.documentElement.dataset.season = season;
     const eb = document.querySelector('.hero .eyebrow');
-    if (eb) eb.innerHTML = `<span>${S.icon}</span> ${S.line} · Picked this morning`;
-    banner.querySelector('.sb-title').innerHTML = `${S.icon} ${S.name} picks <small>${S.line.toLowerCase()}</small>`;
+    if (eb) eb.innerHTML = `<span>${S.icon}</span> ${S.line} · ${app.t('Picked this morning')}`;
+    banner.querySelector('.sb-title').innerHTML = `${S.icon} ${app.t('{season} picks', { season: S.name })} <small>${S.line.toLowerCase()}</small>`;
     banner.querySelector('.sb-items').innerHTML = S.picks
       .map((id) => byId[id])
-      .map((p) => `<article class="mc" data-id="${p.id}"><div class="mc-pic">${app.img(p)}</div><b>${esc(p.name)}</b><span class="mc-row"><span class="price">${money(p.price)}</span><button class="add sm" data-act="add" data-id="${p.id}" aria-label="Add ${esc(p.name)}">+</button></span></article>`)
+      .filter((p) => !isBlocked(p.id))
+      .map((p) => `<article class="mc" data-id="${p.id}"><div class="mc-pic">${app.img(p)}</div><b>${esc(p.name)}</b><span class="mc-row"><span class="price">${money(p.price)}</span><button class="add sm" data-act="add" data-id="${p.id}" aria-label="${app.t('Add {name} to basket', { name: esc(p.name) })}">+</button></span></article>`)
       .join('');
     banner.querySelectorAll('[data-season]').forEach((b) => b.classList.toggle('on', b.dataset.season === season));
     fill();
   }
-  banner.querySelector('.sb-switch').innerHTML = Object.entries(SEASONS).map(([k, s]) => `<button data-season="${k}" title="${s.name}" aria-label="Preview ${s.name}">${s.icon}</button>`).join('');
+  banner.querySelector('.sb-switch').innerHTML = Object.entries(SEASONS).map(([k, s]) => `<button data-season="${k}" title="${s.name}" aria-label="${app.t('Preview {season}', { season: s.name })}">${s.icon}</button>`).join('');
   banner.addEventListener('click', (e) => {
     const b = e.target.closest('[data-season]');
     if (!b) return;
@@ -136,6 +138,7 @@ export function initSeason({ app, canvas, banner }) {
     save('freshly-season', season === auto() ? null : season);
     apply();
   });
+  onPrefs(apply);
   resize();
   apply();
   requestAnimationFrame(loop);

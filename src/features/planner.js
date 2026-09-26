@@ -25,15 +25,15 @@ export function initPlanner({ root, app }) {
   mealsEl.innerHTML = MEALS.map((m) => `
     <button class="meal" draggable="true" data-meal="${m.id}" data-cursor="Drag">
       <img src="${mImg(m)}" alt="" loading="lazy" draggable="false" />
-      <span><b>${m.name}</b><small>⏱ ${m.time} · ${m.kcal} kcal</small></span>
-    </button>`).join('') + '<button class="btn btn-ghost surprise" id="surprise">🎲 Surprise me</button>';
+      <span><b>${m.name}</b><small>⏱ ${m.time.replace("min", app.t("min"))} · ${m.kcal} ${app.t("kcal")}</small></span>
+    </button>`).join('') + `<button class="btn btn-ghost surprise" id="surprise">🎲 ${app.t('Surprise me')}</button>`;
 
   function renderWeek() {
     weekEl.innerHTML = DAYS.map((d, i) => {
       const m = byMeal[plan[d]];
       return `<div class="day ${i === todayIdx ? 'today' : ''} ${m ? 'full' : ''}" data-day="${d}">
-        <header><b>${d}</b><small>${dates[i].getDate()}</small></header>
-        ${m ? `<div class="dish"><img src="${mImg(m)}" alt="" /><span>${m.name}</span><button class="rm" data-rm="${d}" aria-label="Remove ${m.name} from ${d}">×</button></div>` : '<p class="drop">Drop a dinner here</p>'}
+        <header><b>${app.t(d)}</b><small>${dates[i].getDate()}</small></header>
+        ${m ? `<div class="dish"><img src="${mImg(m)}" alt="" /><span>${m.name}</span><button class="rm" data-rm="${d}" aria-label="${app.t('Remove')} ${m.name}">×</button></div>` : `<p class="drop">${app.t('Drop a dinner here')}</p>`}
       </div>`;
     }).join('');
     renderList();
@@ -42,7 +42,7 @@ export function initPlanner({ root, app }) {
   function renderList() {
     const days = DAYS.filter((d) => byMeal[plan[d]]);
     if (!days.length) {
-      listEl.innerHTML = '<p class="plan-empty">Your shopping list builds itself as you plan. 🥕</p>';
+      listEl.innerHTML = `<p class="plan-empty">${app.t('Your shopping list builds itself as you plan. 🥕')}</p>`;
       return;
     }
     const need = {};
@@ -52,15 +52,15 @@ export function initPlanner({ root, app }) {
     const total = ids.reduce((s, id) => s + app.byId[id].price * need[id], 0);
     const kcal = days.reduce((s, d) => s + byMeal[plan[d]].kcal, 0);
     listEl.innerHTML = `
-      <div class="pl-head"><div><h3>Shopping list</h3><p>${days.length} dinner${days.length > 1 ? 's' : ''} · ${ids.length} items · ≈${Math.round(kcal / days.length)} kcal per dinner</p></div>
-      <div class="pl-cta"><button class="btn btn-ghost" id="planClear">Clear week</button><button class="btn btn-primary" id="planAdd">Add all to basket · ${app.money(total)}</button></div></div>
+      <div class="pl-head"><div><h3>${app.t('Shopping list')}</h3><p>${app.t(days.length > 1 ? '{n} dinners' : '{n} dinner', { n: days.length })} · ${app.t('{n} items', { n: ids.length })} · ${app.t('≈{n} kcal per dinner', { n: Math.round(kcal / days.length) })}</p></div>
+      <div class="pl-cta"><button class="btn btn-ghost" id="planClear">${app.t('Clear week')}</button><button class="btn btn-primary" id="planAdd">${app.t('Add all to basket')} · ${app.money(total)}</button></div></div>
       <ul class="pl-items">${ids.map((id) => `<li>${app.img(app.byId[id])}<span>${app.esc(app.byId[id].name)}</span><b>× ${need[id]}</b></li>`).join('')}</ul>`;
     listEl.querySelector('#planAdd').addEventListener('click', () => {
       ids.forEach((id, i) => setTimeout(() => {
         cart.add(id, need[id]);
         if (i < 8) app.flyToCart(listEl.querySelectorAll('.pl-items img')[i], app.byId[id]);
       }, i * 90));
-      app.toast(`Added <b>${ids.length} items</b> for ${days.length} dinners`);
+      app.toast(app.t('Added <b>{n} items</b> for {d} dinners', { n: ids.length, d: days.length }));
     });
     listEl.querySelector('#planClear').addEventListener('click', () => {
       plan = {};

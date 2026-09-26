@@ -205,3 +205,44 @@ export const PRIZES = [
 
 // names for the (clearly demo) live activity popups
 export const SHOPPERS = [['Maya', 'Astoria'], ['Luis', 'Harlem'], ['Grace', 'Park Slope'], ['Omar', 'Hoboken'], ['Hannah', 'Williamsburg'], ['Kenji', 'Long Island City'], ['Zoe', 'Upper West Side'], ['Andre', 'Bed-Stuy'], ['Fatima', 'Jersey City'], ['Leo', 'Greenpoint'], ['Sofia', 'Chelsea'], ['Ben', 'Forest Hills']];
+
+// ---------------- allergens (for the allergy filter) ----------------
+export const ALLERGEN_TYPES = [
+  { id: 'nuts', name: 'Nuts', icon: '🥜' },
+  { id: 'dairy', name: 'Dairy', icon: '🥛' },
+  { id: 'gluten', name: 'Gluten', icon: '🌾' },
+  { id: 'eggs', name: 'Eggs', icon: '🥚' },
+  { id: 'fish', name: 'Fish', icon: '🐟' },
+  { id: 'shellfish', name: 'Shellfish', icon: '🦐' },
+];
+export const ALLERGENS = {
+  nuts: ['nuts', 'cereal', 'chocolate'],
+  dairy: ['milk', 'cheese', 'butter', 'yogurt', 'croissant', 'muffin', 'cookies'],
+  gluten: ['bread', 'croissant', 'bagel', 'baguette', 'muffin', 'pasta', 'cereal', 'cookies'],
+  eggs: ['eggs', 'muffin', 'cookies', 'croissant'],
+  fish: ['salmon'],
+  shellfish: ['shrimp'],
+};
+export const allergensOf = (id) => Object.keys(ALLERGENS).filter((a) => ALLERGENS[a].includes(id));
+
+// ---------------- approximate weight of one unit, in grams (for the nutrition goals) ----------------
+export const GRAMS = {
+  apples: 454, bananas: 454, strawberries: 454, oranges: 130, avocados: 170, lemons: 60, blueberries: 170, grapes: 454, watermelon: 907, mango: 200, pineapple: 900, kiwi: 75,
+  tomatoes: 454, carrots: 907, broccoli: 454, peppers: 450, cucumber: 300, spinach: 142, potatoes: 2268, onions: 1361, corn: 150, mushrooms: 227, garlic: 100, lettuce: 600,
+  milk: 1900, eggs: 600, cheese: 227, butter: 227, yogurt: 907, bread: 700, croissant: 240, bagel: 600, baguette: 250, muffin: 450,
+  chicken: 1814, salmon: 454, steak: 454, shrimp: 454, pasta: 454, rice: 907, oliveoil: 460, honey: 340, coffee: 340, cereal: 340,
+  chocolate: 100, nuts: 340, cookies: 300, chips: 227, juice: 1540, lemonade: 907, water: 1000, tea: 113,
+};
+
+// ---------------- weekly subscription boxes ----------------
+export const BOXES = [
+  { id: 'fruit', name: 'Fruit Box', blurb: 'Seasonal fruit, picked ripe', base: 24, color: '#ffe3d6', pool: ['apples', 'bananas', 'strawberries', 'oranges', 'blueberries', 'grapes', 'mango', 'kiwi', 'pineapple', 'lemons', 'avocados'] },
+  { id: 'veg', name: 'Veggie Box', blurb: 'Crunchy greens and roots', base: 22, color: '#e2f3d8', pool: ['tomatoes', 'carrots', 'broccoli', 'peppers', 'cucumber', 'potatoes', 'onions', 'mushrooms', 'lettuce', 'garlic'] },
+  { id: 'mixed', name: 'Mixed Harvest', blurb: 'The best of both', base: 29, color: '#fdf1d2', pool: ['apples', 'strawberries', 'oranges', 'avocados', 'mango', 'tomatoes', 'carrots', 'broccoli', 'peppers', 'cucumber', 'potatoes', 'lettuce'] },
+  { id: 'breakfast', name: 'Breakfast Box', blurb: 'Eggs, bakery, dairy and fruit', base: 27, color: '#f7e4cc', pool: ['eggs', 'croissant', 'bagel', 'muffin', 'bananas', 'strawberries', 'blueberries', 'oranges', 'coffee', 'avocados'] },
+];
+export const BOX_SIZES = [
+  { id: 's', name: 'Small', serves: '1–2 people', items: 6, k: 1 },
+  { id: 'm', name: 'Medium', serves: '3–4 people', items: 9, k: 1.45 },
+  { id: 'l', name: 'Large', serves: '5+ people', items: 12, k: 1.9 },
+];

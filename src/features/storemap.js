@@ -21,16 +21,16 @@ export function initStoreMap({ host, app, CATEGORIES }) {
   const aisles = LAYOUT.map(([cat, ...geo]) => {
     const c = CATEGORIES.find((k) => k.id === cat);
     const p = app.byId[c.hero];
-    return box('aisle', geo, c.color, bb(`${app.img(p)}<b>${c.name}</b>`, geo[4]), `data-cat="${cat}" tabindex="0" role="button" aria-label="Go to ${c.name}" data-cursor="Shop"`);
+    return box('aisle', geo, c.color, bb(`${app.img(p)}<b>${c.name}</b>`, geo[4]), `data-cat="${cat}" tabindex="0" role="button" aria-label="${app.t('Go to {name}', { name: c.name })}" data-cursor="${app.t('Shop')}"`);
   }).join('');
-  const counters = [400, 520, 640].map((x, i) => box('counter', [x, 500, 64, 36, 34], '#c9cfc7', i === 1 ? bb('<b class="lbl">Checkout</b>', 34) : '')).join('');
+  const counters = [400, 520, 640].map((x, i) => box('counter', [x, 500, 64, 36, 34], '#c9cfc7', i === 1 ? bb(`<b class="lbl">${app.lang === 'en' ? 'Checkout' : app.t('Checkout counters')}</b>`, 34) : '')).join('');
   host.innerHTML = `
     <div class="map-scale">
       <div class="map-floor">
         <div class="map-tiles"></div>
         ${aisles}${counters}
-        <div class="map-door">${bb('<b class="lbl door">Entrance</b>', 0)}</div>
-        <div class="map-here"><i></i>${bb('<b class="lbl here">You are here</b>', 0)}</div>
+        <div class="map-door">${bb(`<b class="lbl door">${app.t('Entrance')}</b>`, 0)}</div>
+        <div class="map-here"><i></i>${bb(`<b class="lbl here">${app.t('You are here')}</b>`, 0)}</div>
         <div class="shopper"><div class="bbw" style="--bh:0px"><div class="bb"><span class="cart-ico">🛒</span></div></div></div>
       </div>
     </div>`;
@@ -63,7 +63,7 @@ export function initStoreMap({ host, app, CATEGORIES }) {
   }
   const go = (el) => {
     app.setCat(el.dataset.cat);
-    app.toast(`Heading to <b>${CATEGORIES.find((c) => c.id === el.dataset.cat).name}</b>`);
+    app.toast(app.t('Heading to <b>{name}</b>', { name: CATEGORIES.find((c) => c.id === el.dataset.cat).name }));
     document.getElementById('shop').scrollIntoView({ behavior: app.reduced ? 'auto' : 'smooth' });
   };
   host.addEventListener('click', (e) => {

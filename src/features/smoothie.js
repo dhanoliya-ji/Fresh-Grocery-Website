@@ -28,7 +28,7 @@ export function initSmoothie({ root, app }) {
 
   bar.innerHTML = Object.keys(BLEND)
     .map((id) => app.byId[id])
-    .map((p) => `<button class="fruit" data-id="${p.id}" data-cursor="Drag" aria-label="Add ${app.esc(p.name)}"><img src="${app.src(p)}" alt="" draggable="false" /><span>${SHORT[p.id]}</span></button>`)
+    .map((p) => `<button class="fruit" data-id="${p.id}" data-cursor="${app.t('Drag')}" aria-label="${app.t('Add {name} to basket', { name: app.esc(p.name) })}"><img src="${app.src(p)}" alt="" draggable="false" /><span>${app.t(SHORT[p.id])}</span></button>`)
     .join('');
 
   const sync = () => {
@@ -40,7 +40,7 @@ export function initSmoothie({ root, app }) {
   function addFruit(id, from) {
     if (blended) reset(true);
     if (inJar.length >= MAX) {
-      app.toast('The blender is full. Hit <b>Blend</b>!');
+      app.toast(app.t('The blender is full. Hit <b>Blend</b>!'));
       return;
     }
     inJar.push(id);
@@ -107,20 +107,21 @@ export function initSmoothie({ root, app }) {
     inJar.forEach((id) => (counts[id] = (counts[id] || 0) + 1));
     const ranked = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
     const suffix = SUFFIX[(inJar.join('').length + inJar.length) % SUFFIX.length];
-    const name = ranked.length === 1 ? `${BLEND[ranked[0]].tag} ${SHORT[ranked[0]]} Smoothie` : `${BLEND[ranked[0]].tag} ${SHORT[ranked[1]]} ${suffix}`;
+    const T = app.t;
+    const name = ranked.length === 1 ? T('{tag} {fruit} Smoothie', { tag: T(BLEND[ranked[0]].tag), fruit: T(SHORT[ranked[0]]) }) : `${T(BLEND[ranked[0]].tag)} ${T(SHORT[ranked[1]])} ${T(suffix)}`;
     const kcal = inJar.reduce((s, id) => s + BLEND[id].kcal, 0) + 90;
     const vitC = Math.min(300, inJar.reduce((s, id) => s + BLEND[id].vitC, 0));
     const price = ranked.reduce((s, id) => s + app.byId[id].price * counts[id], 0) + app.byId.yogurt.price;
     result.innerHTML = `
-      <p class="kicker">Your creation</p>
+      <p class="kicker">${T('Your creation')}</p>
       <h3>${name}</h3>
       <div class="sm-stats">
-        <div><b>${kcal}</b><span>kcal</span></div>
-        <div><b>${vitC}%</b><span>vitamin C</span></div>
-        <div><b>${inJar.length}</b><span>fruit${inJar.length > 1 ? 's' : ''}</span></div>
+        <div><b>${kcal}</b><span>${T('kcal')}</span></div>
+        <div><b>${vitC}%</b><span>${T('vitamin C')}</span></div>
+        <div><b>${inJar.length}</b><span>${T(inJar.length > 1 ? 'fruits' : 'fruit')}</span></div>
       </div>
-      <p class="sm-list">${ranked.map((id) => `${counts[id]} × ${SHORT[id]}`).join(' · ')} · Greek yogurt base</p>
-      <div class="sm-actions"><button class="btn btn-primary" id="smAdd">Add ingredients · ${app.money(price)}</button><button class="btn btn-ghost" id="smAgain">Blend another</button></div>`;
+      <p class="sm-list">${ranked.map((id) => `${counts[id]} × ${T(SHORT[id])}`).join(' · ')} · ${T('Greek yogurt base')}</p>
+      <div class="sm-actions"><button class="btn btn-primary" id="smAdd">${T('Add ingredients')} · ${app.money(price)}</button><button class="btn btn-ghost" id="smAgain">${T('Blend another')}</button></div>`;
     result.hidden = false;
     if (!app.reduced) gsap.from(result.children, { y: 16, opacity: 0, stagger: 0.07, duration: 0.5, ease: 'power3.out' });
     result.querySelector('#smAdd').addEventListener('click', (e) => {
@@ -129,7 +130,7 @@ export function initSmoothie({ root, app }) {
         app.flyToCart(bar.querySelector(`[data-id="${id}"] img`), app.byId[id]);
       }, i * 130));
       cart.add('yogurt');
-      app.toast(`Added everything for your <b>${name}</b>`);
+      app.toast(T('Added everything for your <b>{name}</b>', { name }));
     });
     result.querySelector('#smAgain').addEventListener('click', () => reset());
   }

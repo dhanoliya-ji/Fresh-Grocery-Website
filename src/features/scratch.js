@@ -29,9 +29,9 @@ export function initScratch({ app, host, onWin }) {
       ctx.fillRect(Math.random() * r.width, Math.random() * r.height, 1.5, 1.5);
     }
     ctx.fillStyle = '#5b6168';
-    ctx.font = '700 15px Inter, sans-serif';
+    ctx.font = "700 15px Inter, 'Noto Sans Devanagari', sans-serif";
     ctx.textAlign = 'center';
-    ctx.fillText('🎁  Scratch for a surprise', r.width / 2, r.height / 2 + 5);
+    ctx.fillText(`🎁  ${app.t('Scratch for a surprise')}`, r.width / 2, r.height / 2 + 5);
   }
 
   // new card for each checkout
@@ -79,7 +79,7 @@ export function initScratch({ app, host, onWin }) {
     host.classList.add('won');
     cv.style.opacity = '0';
     cart.setBonus(amount);
-    app.toast(`🎉 Surprise! <b>${app.money(amount)} off</b> this order`);
+    app.toast(app.t('🎉 Surprise! <b>{v} off</b> this order', { v: app.money(amount) }));
     onWin?.();
   }
   cv.addEventListener('pointerdown', (e) => {

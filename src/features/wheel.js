@@ -40,7 +40,7 @@ export function initWheel({ app, fab, modal }) {
     ctx.textAlign = 'right';
     ctx.fillStyle = light(p.color) ? '#1f2a22' : '#ffffff';
     const lines = p.short.split('\n');
-    ctx.font = `800 ${lines.length > 1 ? 34 : 54}px Fraunces, Georgia, serif`;
+    ctx.font = `800 ${lines.length > 1 ? 34 : 54}px Fraunces, 'Noto Serif Devanagari', Georgia, serif`;
     lines.forEach((l, k) => ctx.fillText(l, R - 52, (k - (lines.length - 1) / 2) * 38 + (lines.length > 1 ? 12 : 18)));
     ctx.restore();
   });
@@ -72,8 +72,8 @@ export function initWheel({ app, fab, modal }) {
   function showResult(i, fresh) {
     const p = PRIZES[i];
     msg.innerHTML = fresh
-      ? `🎉 You won <b>${p.label}</b>! It’s been applied to your basket.`
-      : `Today’s prize: <b>${p.label}</b>. ${cart.promo?.label === p.label ? 'It’s in your basket.' : ''} Come back tomorrow for another spin.`;
+      ? app.t('🎉 You won <b>{prize}</b>! It’s been applied to your basket.', { prize: p.label })
+      : `${app.t('Today’s prize: <b>{prize}</b>.', { prize: p.label })} ${cart.promo?.label === p.label ? app.t('It’s in your basket.') : ''} ${app.t('Come back tomorrow for another spin.')}`;
     spinBtn.disabled = true;
     spinBtn.textContent = '✓';
     again.hidden = false;
@@ -90,9 +90,9 @@ export function initWheel({ app, fab, modal }) {
       showResult(s.prize, false);
     } else {
       spinBtn.disabled = false;
-      spinBtn.textContent = 'SPIN';
+      spinBtn.textContent = app.t('SPIN');
       again.hidden = true;
-      msg.innerHTML = 'One free spin every day. Every slice is a win!';
+      msg.innerHTML = app.t('One free spin every day. Every slice is a win!');
     }
   }
   function close() {
@@ -109,7 +109,7 @@ export function initWheel({ app, fab, modal }) {
     const base = state.r - (((state.r - target) % 360) + 360) % 360;
     const end = base - 360 * 6; // six full turns, landing on the chosen slice
     let last = under(state.r);
-    msg.textContent = 'Good luck…';
+    msg.textContent = app.t('Good luck…');
     gsap.to(state, {
       r: end,
       duration: app.reduced ? 0.01 : 5.4,
@@ -131,7 +131,7 @@ export function initWheel({ app, fab, modal }) {
         cart.setPromo({ label: p.label, type: p.type, value: p.value, id: p.id });
         showResult(i, true);
         app.confetti();
-        app.toast(`🎁 <b>${p.label}</b> applied to your basket`);
+        app.toast(app.t('🎁 <b>{prize}</b> applied to your basket', { prize: p.label }));
       },
     });
   });

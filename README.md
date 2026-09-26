@@ -37,7 +37,25 @@ A 3D, interactive storefront for **Freshly**, a fictional neighbourhood grocery 
 - **Evening market theme**: a warm, lamp-lit dark theme. The 3D scenes relight too.
 - **Farmer profiles**: eight growers with their stories, practices and products.
 - Live activity popups on desktop, clearly labelled as demo data.
-- Respects `prefers-reduced-motion` and works on phones. Everything is saved in the browser (localStorage), so nothing needs a server.
+
+### Shopping helpers
+
+- **What can I cook?**: tick what's in your fridge, and recipes re-rank live by how much you already have. One click adds only the missing items.
+- **Nutrition goals**: calorie and protein rings in the basket fill toward your daily target for the people and days you're shopping for.
+- **Budget mode**: set a budget and a bar warns you as you near it, with one-tap cheaper swaps (steak → chicken, coffee → tea).
+- **Weekly box subscription**: pick a box, size, day and frequency, watch the 3D crate fill with this week's produce, and skip any week.
+- **Allergy filter**: hide anything with nuts, dairy, gluten, eggs, fish or shellfish across the shop and search, with warnings everywhere else.
+- **Shopping list that ticks itself off**: type or say "milk, 2 bananas, bread", and each line is matched to a product and crossed off when it lands in the basket.
+- **Price history**: an 8-week animated chart in each product view, plus a sparkline and "Lowest in 8 weeks" label on deals.
+
+### Across the site
+
+- **Three languages**: English, हिन्दी and Español. That covers the interface, product names, recipes and voice input. Product descriptions, farm stories and reviews stay in English.
+- **Works offline and installable**: a service worker caches the whole store, so it browses with no connection, and it can be installed as an app from the browser (or "Add to Home Screen" on iPhone).
+- **Accessibility panel**: bigger text, high contrast, an easy-read font, reduce motion (turns off the 3D movement) and the evening theme.
+- Also respects the system `prefers-reduced-motion` setting and works on phones. Everything is saved in the browser (localStorage), so nothing needs a server.
+
+Translations live in [src/i18n-dict.js](src/i18n-dict.js). The English text is the key, so adding a language means adding one more block.
 
 ## Run locally
 

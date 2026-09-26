@@ -1,6 +1,7 @@
 // Rolling digits: every digit is a 0–9 column that slides to its new value, like a departure board.
 // odo(el, '$12.49') builds or updates the columns; non-digits are plain characters.
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+import { reducedMotion } from '../prefs.js';
+const reduced = reducedMotion();
 const col = '<span class="odo-c">' + '0123456789'.split('').map((d) => `<i>${d}</i>`).join('') + '</span>';
 
 export function odo(el, text) {

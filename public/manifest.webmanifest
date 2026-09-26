@@ -1,0 +1,22 @@
+{
+  "name": "Freshly Market",
+  "short_name": "Freshly",
+  "description": "Farm-fresh groceries in 30 minutes, with a 3D store you can walk through.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7ef",
+  "theme_color": "#1f7a4d",
+  "orientation": "any",
+  "categories": ["shopping", "food"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Shop all products", "url": "./#shop" },
+    { "name": "Deals", "url": "./#deals" },
+    { "name": "My shopping list", "url": "./#list" }
+  ]
+}

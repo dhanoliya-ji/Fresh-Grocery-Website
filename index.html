@@ -13,11 +13,24 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='36' r='22' fill='%23e8453c'/%3E%3Cpath d='M32 14c2-8 10-10 16-8-2 7-9 10-16 8z' fill='%232e9e5b'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Freshly" />
     <script>
       // apply the saved theme before first paint (no flash)
+      // and the display preferences: language, text size, contrast, readable font, reduced motion
       try {
-        if (JSON.parse(localStorage.getItem('freshly-theme')) === 'evening') document.documentElement.dataset.theme = 'evening';
+        var h = document.documentElement;
+        if (JSON.parse(localStorage.getItem('freshly-theme')) === 'evening') h.dataset.theme = 'evening';
+        var p = JSON.parse(localStorage.getItem('freshly-prefs-v1')) || {};
+        if (p.lang) h.lang = p.lang;
+        if (p.text) h.style.setProperty('--text', p.text);
+        if (p.contrast) h.classList.add('hc');
+        if (p.readable) h.classList.add('readable');
+        if (p.motion === 'reduce') h.classList.add('reduce-motion');
       } catch (e) {}
     </script>
     <style>
@@ -70,6 +83,9 @@
           <a href="#smoothie">Smoothies</a>
           <a href="#planner">Meal plan</a>
         </nav>
+        <span class="offline-pill" title="You’re offline">Offline</span>
+        <button class="icon-btn" id="listBtn" aria-label="My shopping list" title="My shopping list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11" /><path d="m3.5 6 1.2 1.2L6.8 5M3.5 12l1.2 1.2 2.1-2.2M3.5 18l1.2 1.2 2.1-2.2" /></svg><span class="count"></span></button>
+        <button class="icon-btn" id="prefsBtn" aria-label="Language and display settings" title="Language and display settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2.2" /><circle cx="9" cy="17" r="2.2" /></svg></button>
         <button class="icon-btn theme-btn" id="themeBtn" aria-label="Evening market theme" aria-pressed="false"></button>
         <button class="icon-btn" id="wishBtn" aria-label="Wishlist"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.4 5 6.9 5c2 0 3.6 1.2 5.1 3 1.5-1.8 3.1-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8C19.5 16.4 12 21 12 21z" /></svg><span class="count" id="wishCount">0</span></button>
         <button class="cart-btn" id="cartBtn" aria-label="Open cart">
@@ -212,6 +228,7 @@
             <div class="toggles">
               <label class="tgl"><input type="checkbox" id="fOrganic" /><span>Organic</span></label>
               <label class="tgl"><input type="checkbox" id="fSale" /><span>On sale</span></label>
+              <button class="allergy-chip" data-open-prefs="allergies"><span aria-hidden="true">⚠</span> Allergies <span class="allergy-count"></span></button>
               <label class="range">Up to <b id="priceOut">$20</b><input type="range" id="fPrice" min="1" max="20" step="1" value="20" aria-label="Maximum price" /></label>
             </div>
           </div>
@@ -286,6 +303,65 @@
             <div class="week" id="week"></div>
           </div>
           <div class="plan-list" id="planList"></div>
+        </div>
+      </section>
+
+      <!-- ================= WHAT CAN I COOK ================= -->
+      <section class="section cook" id="cook">
+        <div class="wrap">
+          <div class="sec-head">
+            <div>
+              <p class="kicker">Fridge match</p>
+              <h2>What can I cook?</h2>
+            </div>
+            <p class="sec-sub" id="cookSum"></p>
+          </div>
+          <div class="cook-in">
+            <div class="fridge-wrap">
+              <div class="fridge-head"><b>In my fridge</b><div><button class="linkish" id="fridgeBasics">I have the basics</button> · <button class="linkish" id="fridgeClear">Clear</button></div></div>
+              <div class="fridge" id="fridge"></div>
+            </div>
+            <div class="cook-list" id="cookList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SUBSCRIPTION BOXES ================= -->
+      <section class="section boxes" id="boxes">
+        <div class="wrap">
+          <div class="sec-head">
+            <div>
+              <p class="kicker">Fresh box subscription</p>
+              <h2>A box of fresh, every week</h2>
+            </div>
+            <p class="sec-sub">Pick a box, a size and a day. Skip or cancel any time.</p>
+          </div>
+          <div class="box-in">
+            <div class="box-pick">
+              <div class="box-types" id="boxTypes"></div>
+              <div class="box-opts">
+                <div class="opt"><b>Size</b><div class="seg" id="boxSizes"></div></div>
+                <div class="opt"><b>Delivery day</b><div class="seg days7" id="boxDays"></div></div>
+                <div class="opt"><b>How often</b><div class="seg" id="boxFreq"></div></div>
+              </div>
+            </div>
+            <aside class="box-summary">
+              <div class="crate-stage" aria-hidden="true">
+                <div class="crate">
+                  <div class="crate-items" id="crateItems"></div>
+                  <i class="cf front"></i><i class="cf back"></i><i class="cf left"></i><i class="cf right"></i><i class="cf bottom"></i>
+                  <span class="crate-tag">Freshly</span>
+                </div>
+                <div class="crate-shadow"></div>
+              </div>
+              <div class="bs-head"><div><p class="kicker">This week’s box</p><h3 id="boxName"></h3></div><p class="bs-price" id="boxPrice"></p></div>
+              <p class="bs-list" id="boxList"></p>
+              <p class="bs-dates-title">Upcoming deliveries <small>tap one to skip it</small></p>
+              <div class="bs-dates" id="boxDates"></div>
+              <button class="btn btn-primary block" id="boxCta"></button>
+              <p class="bs-status" id="boxStatus"></p>
+            </aside>
+          </div>
         </div>
       </section>
 
@@ -386,7 +462,7 @@
         </div>
         <div><b>Shop</b><a href="#shop" data-cat="fruits">Fruits</a><a href="#shop" data-cat="vegetables">Vegetables</a><a href="#shop" data-cat="bakery">Bakery</a><a href="#deals">Deals</a><a href="#recipe">Recipe of the day</a></div>
         <div><b>Explore</b><a href="#storemap">Store map</a><a href="#walk">Store walk</a><a href="#smoothie">Smoothie bar</a><a href="#planner">Meal planner</a><a href="#farms">Our growers</a></div>
-        <div><b>Help</b><a href="#how">Delivery areas</a><a href="#how">How it works</a><button class="linkish" id="footTrack">Track my order</button><span>Every day · 7 am – 11 pm</span><button class="linkish" id="creditsBtn">Photo credits</button></div>
+        <div><b>Help</b><button class="linkish" data-open-prefs="lang">Language &amp; accessibility</button><a href="#how">Delivery areas</a><a href="#how">How it works</a><button class="linkish" id="footTrack">Track my order</button><span>Every day · 7 am – 11 pm</span><button class="linkish" id="creditsBtn">Photo credits</button></div>
       </div>
       <div class="wrap foot-bottom"><span>© <span id="year"></span> Freshly Market</span><span>Made with Three.js &amp; GSAP</span></div>
     </footer>
@@ -407,6 +483,29 @@
     <aside class="drawer" id="drawer" aria-label="Shopping cart" aria-hidden="true">
       <header class="drawer-head"><h3>Your basket</h3><button class="icon-btn close" id="drawerClose" aria-label="Close cart">✕</button></header>
       <div class="free-bar" id="freeBar"><p id="freeText"></p><div class="bar"><i id="freeFill"></i></div></div>
+      <div class="insights" id="insights">
+        <div class="ins-row">
+          <div class="ring" id="kcalRing"></div>
+          <div class="ring" id="protRing"></div>
+          <p class="ins-text" id="insText"></p>
+          <button class="icon-btn ins-edit" id="goalsBtn" aria-label="Goals and budget" title="Goals and budget"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2.2" /><circle cx="9" cy="17" r="2.2" /></svg></button>
+        </div>
+        <form class="goals-form" id="goalsForm" hidden>
+          <p class="gf-title">Daily goals</p>
+          <label>Calories / day<input name="kcal" type="number" min="800" max="5000" step="50" /></label>
+          <label>Protein / day (g)<input name="protein" type="number" min="10" max="300" /></label>
+          <label>People<input name="people" type="number" min="1" max="12" /></label>
+          <label>Shopping for (days)<input name="days" type="number" min="1" max="14" /></label>
+          <label class="tgl gf-budget"><input type="checkbox" name="budgetOn" /><span>Budget mode</span></label>
+          <label>Budget ($)<input name="budget" type="number" min="5" max="2000" step="5" /></label>
+          <button class="btn btn-primary sm" type="submit">Done</button>
+        </form>
+        <div class="budget" id="budgetBox" hidden>
+          <div class="bd-head"><span id="bdText"></span><b id="bdLeft"></b></div>
+          <div class="bd-bar"><i id="bdFill"></i></div>
+          <div class="swaps" id="swaps"></div>
+        </div>
+      </div>
       <div class="basket3d" aria-hidden="true"><div class="basket-back"></div><div class="basket-items" id="basketItems"></div><div class="basket-front"></div></div>
       <ul class="lines" id="lines"></ul>
       <div class="drawer-empty" id="drawerEmpty"><p>Your basket is empty.</p><button class="btn btn-primary" id="startShopping">Start shopping</button></div>
@@ -433,6 +532,7 @@
           <p class="m-fresh" id="mFresh"></p>
           <p class="m-price" id="mPrice"></p>
           <p class="m-desc" id="mDesc"></p>
+          <div class="m-history" id="mHistory"></div>
           <div class="m-weights" id="mWeights"></div>
           <div class="m-buy">
             <div class="qty"><button id="mMinus" aria-label="Less">−</button><span id="mQty">1</span><button id="mPlus" aria-label="More">+</button></div>
@@ -541,6 +641,43 @@
 
     <div class="modal" id="credits" role="dialog" aria-modal="true" aria-label="Photo credits" hidden>
       <div class="modal-box credits-box"><button class="icon-btn close" data-close aria-label="Close">✕</button><h3>Photo credits</h3><p>Photos are CC0 / public domain or Creative Commons licensed, via rawpixel, Wikimedia Commons, Flickr and Openverse.</p><ul id="creditList"></ul></div>
+    </div>
+
+    <aside class="list-panel" id="listPanel" aria-label="My shopping list" aria-hidden="true">
+      <header class="drawer-head"><h3>My shopping list</h3><button class="icon-btn close" data-close aria-label="Close list">✕</button></header>
+      <form class="list-form" id="listForm">
+        <textarea id="listInput" rows="2" placeholder="milk, 2 bananas, bread…" aria-label="Add items to your list"></textarea>
+        <div class="lf-row"><button type="button" class="mic-btn" id="listMic" aria-label="Say your list"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg><span>Say it</span></button><button class="btn btn-primary sm" type="submit">Add to list</button></div>
+      </form>
+      <p class="list-empty" id="listEmpty">Type what you need, separated by commas. Items tick themselves off as they land in your basket. ✨</p>
+      <ul class="list-items" id="listItems"></ul>
+      <footer class="list-foot">
+        <div class="lp-prog"><span id="listProg"></span><div class="lp-bar"><i id="listBar"></i></div></div>
+        <button class="btn btn-primary block" id="listAddAll">Add everything to basket</button>
+        <button class="linkish" id="listClear">Clear ticked items</button>
+      </footer>
+    </aside>
+
+    <div class="modal" id="prefs" role="dialog" aria-modal="true" aria-labelledby="prefsTitle" hidden>
+      <div class="modal-box prefs-box">
+        <button class="icon-btn close" data-close aria-label="Close">✕</button>
+        <h3 id="prefsTitle">Preferences</h3>
+        <section class="pf-sec" data-sec="lang"><h4>🌐 Language</h4><div class="pf-lang" id="pfLang"></div><p class="pf-note">Product descriptions, farm stories and reviews stay in English.</p></section>
+        <section class="pf-sec" data-sec="display"><h4>👁 Display &amp; accessibility</h4>
+          <div class="pf-row"><span>Text size</span><div class="seg" id="pfText"></div></div>
+          <label class="pf-row tgl"><span>High contrast</span><input type="checkbox" id="pfContrast" /></label>
+          <label class="pf-row tgl"><span>Easy-read font</span><input type="checkbox" id="pfReadable" /></label>
+          <label class="pf-row tgl"><span>Reduce motion <small>turns off 3D movement and animations</small></span><input type="checkbox" id="pfMotion" /></label>
+          <label class="pf-row tgl"><span>Evening theme</span><input type="checkbox" id="pfTheme" /></label>
+        </section>
+        <section class="pf-sec" data-sec="allergies"><h4>⚠ Allergies</h4><p class="pf-note">Products containing these are hidden from the shop and search, and flagged everywhere else.</p><div class="pf-allergy" id="pfAllergy"></div></section>
+        <section class="pf-sec" data-sec="app"><h4>📱 Use it like an app</h4>
+          <div id="pfInstall" hidden><p class="pf-note">Install Freshly on this device. It opens in its own window and works offline.</p><button class="btn btn-primary sm" id="pfInstallBtn">Install app</button></div>
+          <p class="pf-note" id="pfInstalled" hidden>✓ Installed. You’re using the app version.</p>
+          <p class="pf-note" id="pfIos" hidden>On iPhone or iPad: tap Share, then “Add to Home Screen”.</p>
+          <p class="pf-note" id="pfOffline"></p>
+        </section>
+      </div>
     </div>
 
     <div class="toasts" id="toasts" aria-live="polite"></div>

@@ -1,9 +1,13 @@
+// translations first: they rename catalogue items before anything renders
+import { t, locale, lang, translateDom } from './i18n.js';
 import './style.css';
 import './features.css';
+import './features2.css';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { STORE, CATEGORIES, PRODUCTS, DEALS, BUNDLES, RECIPE, REVIEWS, byId } from './data.js';
 import { cart, money } from './cart.js';
+import { prefs, reducedMotion, isBlocked, blockedBy, onPrefs } from './prefs.js';
 import { tilt } from './tilt.js';
 import { createHero } from './hero.js';
 import { odo, flip } from './fx/odometer.js';
@@ -23,18 +27,27 @@ import { initVoice } from './features/voice.js';
 import { initFarms } from './features/farms.js';
 import { initActivity } from './features/activity.js';
 import { initScratch } from './features/scratch.js';
+import { initCook } from './features/cook.js';
+import { initInsights } from './features/insights.js';
+import { initSubscribe } from './features/subscribe.js';
+import { initList } from './features/list.js';
+import { initSettings } from './features/settings.js';
+import { trend, sparkSvg, mountChart } from './features/pricehistory.js';
+import { initPWA } from './pwa.js';
 
 gsap.registerPlugin(ScrollTrigger);
+translateDom();
 const BASE = import.meta.env.BASE_URL;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = reducedMotion();
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const catName = (id) => CATEGORIES.find((c) => c.id === id)?.name || '';
 const catColor = (id) => CATEGORIES.find((c) => c.id === id)?.color || '#f4ecdf';
 const src = (p) => `${BASE}img/${p.cut ? 'c' : 'p'}/${p.img}.webp`;
 const img = (p, extra = '') => `<img src="${src(p)}" alt="${esc(p.name)}" class="${p.cut ? '' : 'photo'} ${extra}" loading="lazy" draggable="false" />`;
 const stars = (r) => `<b>★ ${r.toFixed(1)}</b>`;
+const plural = (n, one, many) => t(n === 1 ? one : many, { n });
 
 // how fresh is it? a believable "picked / baked N hours ago", stable for the day
 const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -44,11 +57,16 @@ function freshness(p) {
   if (!verb) return null;
   const max = p.cat === 'bakery' ? 5 : p.cat === 'meat' ? 8 : 14;
   const h = 1 + ((hash(p.id) + dayNo) % max);
-  return { text: `${verb} ${h}h ago`, f: Math.max(0.35, 1 - h / 24) };
+  return { text: t(`${verb} {h}h ago`, { h }), f: Math.max(0.35, 1 - h / 24) };
 }
 const freshHtml = (p) => {
   const f = freshness(p);
-  return f ? `<span class="fresh" style="--f:${f.f.toFixed(2)}" title="Freshness"><i></i>${f.text}</span>` : '';
+  return f ? `<span class="fresh" style="--f:${f.f.toFixed(2)}" title="${t('Freshness')}"><i></i>${f.text}</span>` : '';
+};
+// allergy warning chip (for places where products stay visible, like deals and recipes)
+const allergyHtml = (ids) => {
+  const hit = [...new Set(ids.flatMap((id) => blockedBy(id)))];
+  return hit.length ? `<span class="al-warn">⚠ ${t('Contains')} ${hit.map((a) => t(a)).join(', ')}</span>` : '';
 };
 
 // ============================================================ header
@@ -59,8 +77,10 @@ setInterval(() => (etaEl.textContent = 22 + Math.floor(Math.random() * 12)), 300
 $('#year').textContent = new Date().getFullYear();
 
 // ============================================================ toasts & fx
-function toast(text, p) {
+function toast(text, p, key) {
+  if (key) $(`#toasts [data-key="${key}"]`)?.remove();
   const el = document.createElement('div');
+  if (key) el.dataset.key = key;
   el.className = 'toast';
   el.innerHTML = `${p ? `<img src="${src(p)}" alt="" />` : ''}<span>${text}</span>`;
   $('#toasts').appendChild(el);
@@ -102,7 +122,7 @@ function confetti() {
   ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
   const cols = ['#1f7a4d', '#2e9e5b', '#e8453c', '#ffc94a', '#ff8a3d', '#8fd19e'];
   const P = Array.from({ length: 180 }, () => ({ x: innerWidth / 2, y: innerHeight * 0.45, vx: (Math.random() - 0.5) * 16, vy: -Math.random() * 16 - 4, r: Math.random() * 6 + 4, c: cols[(Math.random() * cols.length) | 0], a: Math.random() * 6, va: (Math.random() - 0.5) * 0.4 }));
-  let t = 0;
+  let tick = 0;
   const step = () => {
     ctx.clearRect(0, 0, innerWidth, innerHeight);
     for (const p of P) {
@@ -118,14 +138,14 @@ function confetti() {
       ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
       ctx.restore();
     }
-    if (++t < 200) requestAnimationFrame(step);
+    if (++tick < 200) requestAnimationFrame(step);
     else ctx.clearRect(0, 0, innerWidth, innerHeight);
   };
   step();
 }
 
 // everything the feature modules need from the page
-const app = { BASE, reduced, esc, src, img, money, byId, PRODUCTS, CATEGORIES, catColor, tilt, toast, flyToCart, confetti, openProduct, setCat, openDrawer };
+const app = { BASE, reduced, esc, src, img, money, byId, PRODUCTS, CATEGORIES, catColor, tilt, toast, flyToCart, confetti, openProduct, setCat, openDrawer, t, locale, lang };
 
 // ============================================================ hero
 const hero = createHero({
@@ -135,7 +155,7 @@ const hero = createHero({
   reduced,
   onPick: (it) => {
     setCat(it.cat);
-    toast(`Showing ${catName(it.cat)}`, byId[it.id]);
+    toast(t('Showing {cat}', { cat: catName(it.cat) }), byId[it.id]);
     setTimeout(() => $('#shop').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }), 150);
   },
 });
@@ -176,7 +196,7 @@ const catGrid = $('#catGrid');
 catGrid.innerHTML = CATEGORIES.map((c) => {
   const p = byId[c.hero];
   const n = PRODUCTS.filter((x) => x.cat === c.id).length;
-  return `<button class="cat" data-cat="${c.id}" style="--c:${c.color}"><h3>${c.name}</h3><p>${c.blurb}</p><span class="cnt">${n} items</span>${img(p)}</button>`;
+  return `<button class="cat" data-cat="${c.id}" style="--c:${c.color}"><h3>${c.name}</h3><p>${c.blurb}</p><span class="cnt">${t('{n} items', { n })}</span>${img(p)}</button>`;
 }).join('');
 $$('.cat').forEach((el) => {
   tilt(el, { max: 10 });
@@ -189,7 +209,7 @@ $$('.cat').forEach((el) => {
 // ============================================================ shop: filters, search, grid
 const state = { cat: 'all', q: '', organic: false, sale: false, max: 20, sort: 'pop' };
 const chips = $('#chips');
-chips.innerHTML = [{ id: 'all', name: 'All' }, ...CATEGORIES].map((c) => `<button class="chip ${c.id === 'all' ? 'on' : ''}" data-cat="${c.id}" role="tab">${c.name}</button>`).join('');
+chips.innerHTML = [{ id: 'all', name: t('All') }, ...CATEGORIES].map((c) => `<button class="chip ${c.id === 'all' ? 'on' : ''}" data-cat="${c.id}" role="tab">${c.name}</button>`).join('');
 chips.addEventListener('click', (e) => {
   const b = e.target.closest('.chip');
   if (b) setCat(b.dataset.cat);
@@ -218,11 +238,13 @@ $('#clearFilters').addEventListener('click', () => {
 
 const match = (p, q) => {
   if (!q) return true;
-  const hay = `${p.name} ${catName(p.cat)} ${p.origin} ${p.badges.join(' ')}`.toLowerCase();
+  const hay = `${p.name} ${p.alias || ''} ${catName(p.cat)} ${p.origin} ${p.badges.join(' ')}`.toLowerCase();
   return q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
 };
 function filtered() {
-  let list = PRODUCTS.filter((p) => (state.cat === 'all' || p.cat === state.cat) && match(p, state.q) && (!state.organic || p.badges.includes('Organic')) && (!state.sale || p.old) && (state.max >= 20 || p.price <= state.max));
+  const base = PRODUCTS.filter((p) => (state.cat === 'all' || p.cat === state.cat) && match(p, state.q) && (!state.organic || p.badges.includes('Organic')) && (!state.sale || p.old) && (state.max >= 20 || p.price <= state.max));
+  const list = base.filter((p) => !isBlocked(p.id));
+  list.hidden = base.length - list.length;
   const s = state.sort;
   if (s === 'low') list.sort((a, b) => a.price - b.price);
   else if (s === 'high') list.sort((a, b) => b.price - a.price);
@@ -234,30 +256,36 @@ function filtered() {
 
 const buyHtml = (p) => {
   const q = cart.qty(p.id);
-  return q ? `<div class="stepper" data-id="${p.id}"><button data-act="dec" aria-label="Remove one">−</button><span>${q}</span><button data-act="inc" aria-label="Add one">+</button></div>` : `<button class="add" data-act="add" data-id="${p.id}" aria-label="Add ${esc(p.name)} to basket">+</button>`;
+  return q ? `<div class="stepper" data-id="${p.id}"><button data-act="dec" aria-label="${t('Remove one')}">−</button><span>${q}</span><button data-act="inc" aria-label="${t('Add one')}">+</button></div>` : `<button class="add" data-act="add" data-id="${p.id}" aria-label="${t('Add {name} to basket', { name: esc(p.name) })}">+</button>`;
 };
-const badgeHtml = (p) => p.badges.map((b) => `<span class="badge ${b.split(' ')[0]}">${b === 'Sale' ? `-${Math.round((1 - p.price / p.old) * 100)}%` : b}</span>`).join('');
+const badgeName = (b) => ({ Organic: t('Organic'), 'Fresh today': t('Fresh today') })[b] || b;
+const badgeHtml = (p) => p.badges.map((b) => `<span class="badge ${b.split(' ')[0]}">${b === 'Sale' ? `-${Math.round((1 - p.price / p.old) * 100)}%` : badgeName(b)}</span>`).join('');
+const priceTrend = (p) => {
+  const tr = trend(p);
+  return p.old || tr.lowest ? `<span class="pt ${tr.lowest ? 'low' : ''}" title="${t('8-week price history')}">${sparkSvg(p)}${tr.lowest && tr.change < -0.03 ? `<em>${t('Lowest in 8 weeks')}</em>` : ''}</span>` : '';
+};
 const cardHtml = (p, i) => `
   <article class="card enter" data-id="${p.id}" style="animation-delay:${Math.min(i, 12) * 35}ms">
     <div class="pic" style="--c:${catColor(p.cat)}">
       <div class="badges">${badgeHtml(p)}</div>
-      <button class="icon-btn wish ${cart.wish.has(p.id) ? 'on' : ''}" data-act="wish" aria-label="Save ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.4 5 6.9 5c2 0 3.6 1.2 5.1 3 1.5-1.8 3.1-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
-      <button class="cmp-btn ${compare?.has(p.id) ? 'on' : ''}" data-act="cmp" aria-label="Compare ${esc(p.name)}" title="Compare">⇄</button>
+      <button class="icon-btn wish ${cart.wish.has(p.id) ? 'on' : ''}" data-act="wish" aria-label="${t('Save {name}', { name: esc(p.name) })}"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.4 5 6.9 5c2 0 3.6 1.2 5.1 3 1.5-1.8 3.1-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+      <button class="cmp-btn ${compare?.has(p.id) ? 'on' : ''}" data-act="cmp" aria-label="${t('Compare {name}', { name: esc(p.name) })}" title="${t('Compare')}">⇄</button>
       ${img(p)}
     </div>
     <h3>${esc(p.name)}</h3>
     <span class="unit">${p.unit} · ${esc(p.origin)}</span>
     <span class="rate">${stars(p.rating)} (${p.reviews})${freshHtml(p)}</span>
-    <div class="foot"><span class="price">${money(p.price)}${p.old ? `<s>${money(p.old)}</s>` : ''}</span><span class="buy">${buyHtml(p)}</span></div>
+    <div class="foot"><span class="price">${money(p.price)}${p.old ? `<s>${money(p.old)}</s>` : ''}${priceTrend(p)}</span><span class="buy">${buyHtml(p)}</span></div>
   </article>`;
 
 const grid = $('#grid');
 function render() {
   const list = filtered();
-  $('#shopTitle').textContent = state.q ? `Results for “${state.q}”` : state.cat === 'all' ? 'All products' : catName(state.cat);
-  $('#resultCount').textContent = `${list.length} product${list.length === 1 ? '' : 's'}`;
+  $('#shopTitle').textContent = state.q ? t('Results for “{q}”', { q: state.q }) : state.cat === 'all' ? t('All products') : catName(state.cat);
+  $('#resultCount').innerHTML = plural(list.length, '{n} product', '{n} products') + (list.hidden ? ` · <button class="linkish" data-open-prefs="allergies">${plural(list.hidden, '{n} hidden by your allergy filter', '{n} hidden by your allergy filter')}</button>` : '');
   grid.innerHTML = list.map(cardHtml).join('');
   $('#empty').hidden = list.length > 0;
+  $('#empty p').innerHTML = list.hidden && !list.length ? `⚠ ${plural(list.hidden, '{n} hidden by your allergy filter', '{n} hidden by your allergy filter')}. <button class="linkish" data-open-prefs="allergies">${t('Change allergies')}</button>` : t('🥕 Nothing matches those filters.');
   $$('.card', grid).forEach((c) => tilt(c, { max: 9 }));
 }
 function refreshBuy(id) {
@@ -278,12 +306,12 @@ document.addEventListener('click', (e) => {
     if (a === 'add') {
       cart.add(id);
       flyToCart(act.closest('.card, .deal, .mc')?.querySelector('img'), p);
-      toast(`Added <b>${esc(p.name)}</b>`, p);
+      toast(t('Added <b>{name}</b>', { name: esc(p.name) }), p);
     } else if (a === 'inc') cart.add(id);
     else if (a === 'dec') cart.set(id, cart.qty(id) - 1);
     else if (a === 'wish') {
       cart.toggleWish(id);
-      toast(cart.wish.has(id) ? `Saved ${esc(p.name)} ♥` : 'Removed from wishlist');
+      toast(cart.wish.has(id) ? t('Saved {name} ♥', { name: esc(p.name) }) : t('Removed from wishlist'));
     } else if (a === 'cmp') compare.toggle(id);
     return;
   }
@@ -296,11 +324,15 @@ let sIdx = -1;
 function showSuggest() {
   const q = search.value.trim();
   if (!q) return suggest.classList.remove('show');
-  const hits = PRODUCTS.filter((p) => match(p, q)).slice(0, 6);
+  const all = PRODUCTS.filter((p) => match(p, q));
+  const hits = all.filter((p) => !isBlocked(p.id)).slice(0, 6);
+  const hidden = all.filter((p) => isBlocked(p.id)).length;
   sIdx = -1;
-  suggest.innerHTML = hits.length
-    ? hits.map((p) => `<button data-id="${p.id}" role="option"><img src="${src(p)}" alt="" /><span>${esc(p.name).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'i'), '<em>$1</em>')}</span><b>${money(p.price)}</b></button>`).join('')
-    : `<button disabled><span>No matches for “${esc(q)}”</span></button>`;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'i');
+  suggest.innerHTML =
+    (hits.length
+      ? hits.map((p) => `<button data-id="${p.id}" role="option"><img src="${src(p)}" alt="" /><span>${esc(p.name).replace(re, '<em>$1</em>')}</span><b>${money(p.price)}</b></button>`).join('')
+      : `<button disabled><span>${t('No matches for “{q}”', { q: esc(q) })}</span></button>`) + (hidden ? `<p class="sg-note">⚠ ${plural(hidden, '{n} hidden by your allergy filter', '{n} hidden by your allergy filter')}</p>` : '');
   suggest.classList.add('show');
 }
 search.addEventListener('input', () => {
@@ -340,11 +372,11 @@ const stage = $('#carStage');
 const deals = DEALS.map((d) => ({ ...d, p: byId[d.id] }));
 stage.innerHTML = deals.map(({ p, label }) => `
   <article class="deal" data-id="${p.id}">
-    <span class="off">-${Math.round((1 - p.price / p.old) * 100)}%<small>OFF</small></span>
+    <span class="off">-${Math.round((1 - p.price / p.old) * 100)}%<small>${t('OFF')}</small></span>
     <span class="lbl">${label}</span>
     <div class="d-img">${img(p)}</div>
-    <h4>${esc(p.name)}</h4><span class="unit">${p.unit}</span>
-    <div class="d-row"><span class="price">${money(p.price)}<s>${money(p.old)}</s></span><button class="add" data-act="add" data-id="${p.id}" aria-label="Add ${esc(p.name)}">+</button></div>
+    <h4>${esc(p.name)}</h4><span class="unit">${p.unit}</span><span class="al-slot" data-al="${p.id}"></span>
+    <div class="d-row"><span class="price">${money(p.price)}<s>${money(p.old)}</s></span><button class="add" data-act="add" data-id="${p.id}" aria-label="${t('Add {name} to basket', { name: esc(p.name) })}">+</button></div>
   </article>`).join('');
 const dealEls = $$('.deal', stage);
 let rot = 0;
@@ -382,7 +414,7 @@ $('#carousel').addEventListener('pointerup', (e) => {
 // bundles
 $('#bundles').innerHTML = BUNDLES.map((b) => {
   const total = b.items.reduce((s, id) => s + byId[id].price, 0);
-  return `<div class="bundle"><img src="${BASE}img/${b.img}.webp" alt="" loading="lazy" /><div><p class="kicker">Bundle · save ${money(b.save)}</p><h4>${b.name}</h4><div class="mini">${b.items.map((id) => `<span>${esc(byId[id].name)}</span>`).join('')}</div><div class="b-row"><span class="price">${money(total - b.save)}<s>${money(total)}</s></span><button class="btn btn-primary" data-bundle="${b.id}">Add bundle</button></div></div></div>`;
+  return `<div class="bundle"><img src="${BASE}img/${b.img}.webp" alt="" loading="lazy" /><div><p class="kicker">${t('Bundle · save {v}', { v: money(b.save) })}</p><h4>${b.name}</h4><div class="mini">${b.items.map((id) => `<span>${esc(byId[id].name)}</span>`).join('')}</div><span class="al-slot" data-al="${b.items.join(' ')}"></span><div class="b-row"><span class="price">${money(total - b.save)}<s>${money(total)}</s></span><button class="btn btn-primary" data-bundle="${b.id}">${t('Add bundle')}</button></div></div></div>`;
 }).join('');
 $('#bundles').addEventListener('click', (e) => {
   const b = BUNDLES.find((x) => x.id === e.target.closest('[data-bundle]')?.dataset.bundle);
@@ -391,7 +423,7 @@ $('#bundles').addEventListener('click', (e) => {
     cart.add(id);
     flyToCart(e.target, byId[id]);
   }, i * 140));
-  toast(`Added the <b>${b.name}</b>`);
+  toast(t('Added the <b>{name}</b>', { name: b.name }));
 });
 
 // countdown to Sunday 23:59, flip-clock style
@@ -418,10 +450,10 @@ setInterval(tickCd, 1000);
 
 // ============================================================ recipe of the day
 $('#recipeTitle').textContent = RECIPE.title;
-$('#recipeMeta').textContent = `⏱ ${RECIPE.time} · serves ${RECIPE.serves} · ${RECIPE.kcal} kcal per serving`;
+$('#recipeMeta').textContent = `⏱ ${RECIPE.time.replace("min", t("min"))} · ${t('serves {n}', { n: RECIPE.serves })} · ${t('{n} kcal per serving', { n: RECIPE.kcal })}`;
 $('#recipeImg').src = `${BASE}img/${RECIPE.img}.webp`;
 $('#recipeImg').alt = RECIPE.title;
-$('#ingredients').innerHTML = RECIPE.items.map(({ id, note }) => `<li>${img(byId[id])}<div><b>${esc(byId[id].name)}</b><small>${note}</small></div></li>`).join('');
+$('#ingredients').innerHTML = RECIPE.items.map(({ id, note }) => `<li>${img(byId[id])}<div><b>${esc(byId[id].name)}</b><small>${note}</small></div></li>`).join('') + `<li class="al-row"><span class="al-slot" data-al="${RECIPE.items.map((i) => i.id).join(' ')}"></span></li>`;
 $('#steps').innerHTML = RECIPE.steps.map((s) => `<li>${esc(s)}</li>`).join('');
 const recipeTotal = RECIPE.items.reduce((s, { id, qty }) => s + byId[id].price * qty, 0);
 $('#recipeTotal').textContent = money(recipeTotal);
@@ -430,7 +462,7 @@ $('#addRecipe').addEventListener('click', () => {
     cart.add(id, qty);
     flyToCart($$('#ingredients img')[i], byId[id]);
   }, i * 120));
-  toast(`Added everything for the <b>${RECIPE.title}</b>`);
+  toast(t('Added everything for the <b>{name}</b>', { name: RECIPE.title }));
 });
 // ingredients fly in from all sides as you scroll, then orbit the plate in 3D (depth scaling + layering)
 const orbit = $('#orbit');
@@ -447,16 +479,16 @@ if (!reduced) {
   ScrollTrigger.create({ trigger: '.recipe-visual', start: 'top 90%', end: 'center 55%', scrub: 0.8, onUpdate: (s) => (assemble = s.progress) });
   gsap.fromTo('#plate', { scale: 0.7, rotate: -40, opacity: 0.2 }, { scale: 1, rotate: 0, opacity: 1, ease: 'none', scrollTrigger: { trigger: '.recipe-visual', start: 'top 90%', end: 'center 60%', scrub: 0.8 } });
 }
-const orbitLoop = (t) => {
+const orbitLoop = (tm) => {
   requestAnimationFrame(orbitLoop);
   if (!orbitOn) return;
   const w = orbit.clientWidth;
   const n = orbiters.length;
   orbiters.forEach((el, i) => {
-    const a = (reduced ? 0 : t * 0.00022) + (i / n) * Math.PI * 2;
+    const a = (reduced ? 0 : tm * 0.00022) + (i / n) * Math.PI * 2;
     const z = Math.sin(a);
     let x = Math.cos(a) * w * 0.44 + w * 0.5 - w * 0.09;
-    let y = z * w * 0.13 + w * 0.46 - w * 0.09 + Math.sin(t * 0.002 + i) * 4;
+    let y = z * w * 0.13 + w * 0.46 - w * 0.09 + Math.sin(tm * 0.002 + i) * 4;
     let s = 0.75 + (z + 1) * 0.22;
     let r = Math.cos(a) * 12;
     // before assembly each ingredient waits off to one side, big and spinning
@@ -502,13 +534,13 @@ $('#zipForm').addEventListener('submit', (e) => {
   const out = $('#zipOut');
   if (!/^\d{5}$/.test(z)) {
     out.className = 'zip-out no';
-    out.textContent = 'Please enter a 5-digit ZIP code.';
+    out.textContent = t('Please enter a 5-digit ZIP code.');
   } else if (z[0] === '9' || z[0] === '8') {
     out.className = 'zip-out no';
-    out.textContent = `Not in ${z} yet. We’re expanding west soon!`;
+    out.textContent = t('Not in {z} yet. We’re expanding west soon!', { z });
   } else {
     out.className = 'zip-out ok';
-    out.textContent = `Yes! We deliver to ${z}. Next slot in about ${20 + (parseInt(z, 10) % 25)} minutes.`;
+    out.textContent = t('Yes! We deliver to {z}. Next slot in about {m} minutes.', { z, m: 20 + (parseInt(z, 10) % 25) });
   }
 });
 
@@ -521,29 +553,29 @@ if (!reduced) {
 
 // ============================================================ reviews
 const avCols = ['#2e9e5b', '#e8453c', '#ff8a3d', '#3d7bd9', '#9b59b6', '#16a085'];
-$('#revTrack').innerHTML = REVIEWS.map((r, i) => `<article class="rev"><div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div><p>“${esc(r.text)}”</p><div class="who"><span class="av" style="background:${avCols[i % 6]}">${r.name[0]}</span><div><b>${esc(r.name)}</b><small>${esc(r.city)} · verified buyer</small></div></div></article>`).join('');
+$('#revTrack').innerHTML = REVIEWS.map((r, i) => `<article class="rev"><div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div><p>“${esc(r.text)}”</p><div class="who"><span class="av" style="background:${avCols[i % 6]}">${r.name[0]}</span><div><b>${esc(r.name)}</b><small>${esc(r.city)} · ${t('verified buyer')}</small></div></div></article>`).join('');
 $$('.rev').forEach((el) => tilt(el, { max: 6 }));
 
 // ============================================================ promos
 const CODES = {
-  FRESH10: { label: 'FRESH10 · 10% off', type: 'pct', value: 10 },
-  FREESHIP: { label: 'FREESHIP · free delivery', type: 'ship', value: 0 },
-  HELLO5: { label: 'HELLO5 · $5 off', type: 'amt', value: 5 },
+  FRESH10: { label: t('FRESH10 · 10% off'), type: 'pct', value: 10 },
+  FREESHIP: { label: t('FREESHIP · free delivery'), type: 'ship', value: 0 },
+  HELLO5: { label: t('HELLO5 · $5 off'), type: 'amt', value: 5 },
 };
 $('#newsForm').addEventListener('submit', (e) => {
   e.preventDefault();
   cart.setPromo(CODES.FRESH10);
-  toast('🎉 Code <b>FRESH10</b> applied: 10% off your basket (demo)');
+  toast(t('🎉 Code <b>FRESH10</b> applied: 10% off your basket (demo)'));
   e.target.reset();
 });
 $('#promoForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const code = $('#promoInput').value.trim().toUpperCase();
   if (!code) return;
-  if (!CODES[code]) return toast(`“${esc(code)}” isn’t a valid code. Try FRESH10`);
+  if (!CODES[code]) return toast(t('“{code}” isn’t a valid code. Try FRESH10', { code: esc(code) }));
   cart.setPromo(CODES[code]);
   $('#promoInput').value = '';
-  toast(`🎁 <b>${CODES[code].label}</b> applied`);
+  toast(t('🎁 <b>{label}</b> applied', { label: CODES[code].label }));
 });
 $('#promoRemove').addEventListener('click', () => cart.setPromo(null));
 
@@ -560,7 +592,7 @@ function openDrawer() {
 function closeDrawer() {
   drawer.classList.remove('open');
   drawer.setAttribute('aria-hidden', 'true');
-  if (!anyModalOpen()) scrim.classList.remove('show');
+  if (!anyModalOpen() && !list?.isOpen) scrim.classList.remove('show');
 }
 $('#cartBtn').addEventListener('click', openDrawer);
 $('#drawerClose').addEventListener('click', closeDrawer);
@@ -575,11 +607,11 @@ $('#startShopping').addEventListener('click', () => {
 });
 function renderDrawer() {
   const items = cart.items;
-  $('#lines').innerHTML = items.map(({ p, q }) => `<li class="line" data-id="${p.id}">${img(p)}<div><b>${esc(p.name)}</b><small>${p.unit} · ${money(p.price)}</small><div class="stepper"><button data-act="dec" aria-label="Remove one">−</button><span>${q}</span><button data-act="inc" aria-label="Add one">+</button></div></div><div class="lp">${money(p.price * q)}</div></li>`).join('');
+  $('#lines').innerHTML = items.map(({ p, q }) => `<li class="line" data-id="${p.id}">${img(p)}<div><b>${esc(p.name)}</b><small>${p.unit} · ${money(p.price)}</small><div class="stepper"><button data-act="dec" aria-label="${t('Remove one')}">−</button><span>${q}</span><button data-act="inc" aria-label="${t('Add one')}">+</button></div></div><div class="lp">${money(p.price * q)}</div></li>`).join('');
   $('#drawerEmpty').hidden = items.length > 0;
   $('#drawerFoot').hidden = items.length === 0;
   odo($('#subTotal'), money(cart.subtotal));
-  $('#delFee').textContent = cart.delivery ? money(cart.delivery) : 'FREE';
+  $('#delFee').textContent = cart.delivery ? money(cart.delivery) : t('FREE');
   odo($('#grandTotal'), money(cart.total));
   $('#discRow').hidden = !cart.discount;
   $('#discAmt').textContent = `−${money(cart.discount)}`;
@@ -587,7 +619,7 @@ function renderDrawer() {
   $('#promoForm').hidden = !!cart.promo;
   $('#promoLabel').textContent = cart.promo?.label || '';
   const left = STORE.freeDeliveryOver - cart.subtotal;
-  $('#freeText').innerHTML = cart.promo?.type === 'ship' ? '🎁 Free delivery from your prize!' : left > 0 ? `Add <b>${money(left)}</b> more for <b>free delivery</b>` : '🎉 You’ve unlocked <b>free delivery</b>!';
+  $('#freeText').innerHTML = cart.promo?.type === 'ship' ? t('🎁 Free delivery from your prize!') : left > 0 ? t('Add <b>{v}</b> more for <b>free delivery</b>', { v: money(left) }) : t('🎉 You’ve unlocked <b>free delivery</b>!');
   $('#freeFill').style.width = `${cart.promo?.type === 'ship' ? 100 : Math.min(100, (cart.subtotal / STORE.freeDeliveryOver) * 100)}%`;
   // the basket fills with the latest items, which fall in and settle with physics
   basket.set(items.flatMap(({ p, q }) => Array.from({ length: Math.min(q, 3) }, (_, k) => ({ key: `${p.id}-${k}`, src: src(p), photo: !p.cut }))).slice(-10));
@@ -614,11 +646,11 @@ cart.on((ev) => {
 
 // wishlist button filters the shop to saved items
 $('#wishBtn').addEventListener('click', () => {
-  if (!cart.wish.size) return toast('Tap ♥ on a product to save it');
+  if (!cart.wish.size) return toast(t('Tap ♥ on a product to save it'));
   grid.innerHTML = [...cart.wish].map((id, i) => cardHtml(byId[id], i)).join('');
   $$('.card', grid).forEach((c) => tilt(c, { max: 9 }));
-  $('#shopTitle').textContent = 'Your wishlist';
-  $('#resultCount').textContent = `${cart.wish.size} saved`;
+  $('#shopTitle').textContent = t('Your wishlist');
+  $('#resultCount').textContent = t('{n} saved', { n: cart.wish.size });
   $('#empty').hidden = true;
   $('#shop').scrollIntoView({ behavior: 'smooth' });
 });
@@ -640,14 +672,15 @@ function openProduct(id) {
   $('#mVisual').style.setProperty('--m-bg', catColor(p.cat));
   $('#mBadges').innerHTML = badgeHtml(p);
   $('#mTitle').textContent = p.name;
-  $('#mRating').innerHTML = `${stars(p.rating)} · ${p.reviews} reviews · ${esc(catName(p.cat))}`;
-  $('#mFresh').innerHTML = freshHtml(p);
+  $('#mRating').innerHTML = `${stars(p.rating)} · ${t('{n} reviews', { n: p.reviews })} · ${esc(catName(p.cat))}`;
+  $('#mFresh').innerHTML = freshHtml(p) + allergyHtml([p.id]);
   $('#mPrice').innerHTML = `${money(p.price)} <small>/ ${p.unit}</small>${p.old ? `<s>${money(p.old)}</s>` : ''}`;
   $('#mDesc').textContent = p.desc;
+  mountChart($('#mHistory'), p, { money, t });
   $('#mWeights').innerHTML = (p.weights || []).map((w, i) => `<button class="${i ? '' : 'on'}" data-w="${i}">${w}</button>`).join('');
-  const fact = (k, v, u = 'g') => (v === null ? '' : `<div><dt>${k}</dt><dd>${v}${u}</dd></div>`);
-  $('#mFacts').innerHTML = `${fact('Calories', p.kcal, '')}${fact('Protein', p.protein)}${fact('Carbs', p.carbs)}${fact('Fat', p.fat)}<div class="wide"><dt>Origin</dt><dd>${esc(p.origin)}</dd></div><div class="wide"><dt>Per</dt><dd>100 g (approx.)</dd></div>`;
-  const pairs = PRODUCTS.filter((x) => x.cat !== p.cat && x.id !== p.id).sort(() => Math.random() - 0.5).slice(0, 3);
+  const fact = (k, v, u = 'g') => (v === null ? '' : `<div><dt>${t(k)}</dt><dd>${v}${u}</dd></div>`);
+  $('#mFacts').innerHTML = `${fact('Calories', p.kcal, '')}${fact('Protein', p.protein)}${fact('Carbs', p.carbs)}${fact('Fat', p.fat)}<div class="wide"><dt>${t('Origin')}</dt><dd>${esc(p.origin)}</dd></div><div class="wide"><dt>${t('Per')}</dt><dd>${t('100 g (approx.)')}</dd></div>`;
+  const pairs = PRODUCTS.filter((x) => x.cat !== p.cat && x.id !== p.id && !isBlocked(x.id)).sort(() => Math.random() - 0.5).slice(0, 3);
   $('#mPairs').innerHTML = pairs.map((x) => `<button class="pair" data-pair="${x.id}">${img(x)}<span>${esc(x.name)}</span></button>`).join('');
   syncModal();
   modal.hidden = false;
@@ -660,13 +693,13 @@ function syncModal() {
   const p = mState.p;
   $('#mQty').textContent = mState.q;
   const inCart = cart.qty(p.id);
-  $('#mAdd').textContent = `Add ${mState.q} · ${money(p.price * mState.q)}${inCart ? ` (${inCart} in basket)` : ''}`;
+  $('#mAdd').textContent = `${t('Add {n}', { n: mState.q })} · ${money(p.price * mState.q)}${inCart ? ` (${t('{n} in basket', { n: inCart })})` : ''}`;
   $('#mWish').classList.toggle('on', cart.wish.has(p.id));
 }
 function closeModal(el = modal) {
   el.hidden = true;
   document.body.style.overflow = '';
-  if (!drawer.classList.contains('open') && !anyModalOpen()) scrim.classList.remove('show');
+  if (!drawer.classList.contains('open') && !anyModalOpen() && !list?.isOpen) scrim.classList.remove('show');
 }
 const anyModalOpen = () => $$('.modal').some((m) => !m.hidden);
 $('#modalClose').addEventListener('click', () => closeModal());
@@ -682,7 +715,7 @@ $('#mWeights').addEventListener('click', (e) => {
 $('#mAdd').addEventListener('click', () => {
   cart.add(mState.p.id, mState.q);
   flyToCart($('#mImg'), mState.p);
-  toast(`Added ${mState.q} × <b>${esc(mState.p.name)}</b>`, mState.p);
+  toast(t('Added {n} × <b>{name}</b>', { n: mState.q, name: esc(mState.p.name) }), mState.p);
 });
 $('#mPairs').addEventListener('click', (e) => {
   const b = e.target.closest('[data-pair]');
@@ -748,25 +781,26 @@ function renderSummary() {
   const disc = cart.discount;
   $('#coLines').innerHTML =
     cart.items.map(({ p, q }) => `<li>${img(p)}<span>${q} × ${esc(p.name)}</span><b>${money(p.price * q)}</b></li>`).join('') +
-    (disc ? `<li class="disc"><span>${cart.promo ? esc(cart.promo.label) : 'Discount'}${cart.bonus ? ' + scratch card' : ''}</span><b>−${money(disc)}</b></li>` : '') +
-    `<li><span>Delivery</span><b>${cart.delivery ? money(cart.delivery) : 'FREE'}</b></li><li><span>Service fee</span><b>${money(STORE.serviceFee)}</b></li>`;
+    (disc ? `<li class="disc"><span>${cart.promo ? esc(cart.promo.label) : t('Discount')}${cart.bonus ? ` + ${t('scratch card')}` : ''}</span><b>−${money(disc)}</b></li>` : '') +
+    `<li><span>${t('Delivery')}</span><b>${cart.delivery ? money(cart.delivery) : t('FREE')}</b></li><li><span>${t('Service fee')}</span><b>${money(STORE.serviceFee)}</b></li>`;
   odo($('#coTotal'), money(cart.total));
-  if (coState.step === 2) $('#coNext').textContent = `Place order · ${money(cart.total)}`;
+  if (coState.step === 2) $('#coNext').textContent = t('Place order · {v}', { v: money(cart.total) });
 }
 function showStep() {
-  $$('#coForm fieldset').forEach((f) => (f.hidden = +f.dataset.step !== coState.step));
+  $$('#coForm fieldset').forEach((fs) => (fs.hidden = +fs.dataset.step !== coState.step));
   $$('#coSteps li').forEach((li, i) => {
     li.classList.toggle('on', i === coState.step);
     li.classList.toggle('done', i < coState.step);
   });
   $('#coBack').style.visibility = coState.step ? 'visible' : 'hidden';
-  $('#coNext').textContent = coState.step === 2 ? `Place order · ${money(cart.total)}` : 'Continue';
+  $('#coNext').textContent = coState.step === 2 ? t('Place order · {v}', { v: money(cart.total) }) : t('Continue');
   $('#coErr').textContent = '';
 }
+const hourLabel = (h) => new Date(2020, 0, 1, h).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
 function renderDays() {
   const days = [0, 1, 2].map((k) => {
     const d = new Date(Date.now() + k * 864e5);
-    return { k, label: k === 0 ? 'Today' : k === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' }), date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
+    return { k, label: k === 0 ? t('Today') : k === 1 ? t('Tomorrow') : d.toLocaleDateString(locale, { weekday: 'short' }), date: d.toLocaleDateString(locale, { month: 'short', day: 'numeric' }) };
   });
   $('#days').innerHTML = days.map((d) => `<button type="button" data-day="${d.k}" class="${d.k === coState.day ? 'on' : ''}"><b>${d.label}</b>${d.date}</button>`).join('');
   const now = new Date().getHours() + new Date().getMinutes() / 60;
@@ -775,8 +809,7 @@ function renderDays() {
   $('#slots').innerHTML = slots.map((h) => {
     const full = (h * 7 + coState.day * 3) % 5 === 0;
     const past = coState.day === 0 && h < now + 0.6;
-    const label = `${((h + 11) % 12) + 1}:00${h < 12 ? 'am' : 'pm'}`;
-    return `<button type="button" data-slot="${h}" ${full || past ? 'disabled' : ''} class="${coState.slot === h ? 'on' : ''}">${label}${full && !past ? ' · full' : ''}</button>`;
+    return `<button type="button" data-slot="${h}" ${full || past ? 'disabled' : ''} class="${coState.slot === h ? 'on' : ''}">${hourLabel(h)}${full && !past ? ` · ${t('full')}` : ''}</button>`;
   }).join('');
   // default to the earliest open window so the step is one click shorter
   if (coState.slot === null || $(`#slots [data-slot="${coState.slot}"]`)?.disabled) {
@@ -812,7 +845,7 @@ f.exp.addEventListener('input', () => {
   f.exp.value = v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v;
   $('#cardExp').textContent = f.exp.value || 'MM/YY';
 });
-f.name.addEventListener('input', () => ($('#cardName').textContent = f.name.value.toUpperCase() || 'YOUR NAME'));
+f.name.addEventListener('input', () => ($('#cardName').textContent = f.name.value.toUpperCase() || t('YOUR NAME')));
 $('#coBack').addEventListener('click', () => {
   coState.step = Math.max(0, coState.step - 1);
   showStep();
@@ -829,12 +862,12 @@ f.addEventListener('submit', (e) => {
   });
   if (coState.step === 2 && f.card.value.replace(/\D/g, '').length < 12) bad = f.card;
   if (bad) {
-    $('#coErr').textContent = 'Please fill in the highlighted fields.';
+    $('#coErr').textContent = t('Please fill in the highlighted fields.');
     bad.focus();
     return;
   }
   if (coState.step === 1 && coState.slot === null) {
-    $('#coErr').textContent = 'Pick a delivery window.';
+    $('#coErr').textContent = t('Pick a delivery window.');
     return;
   }
   if (coState.step < 2) {
@@ -844,10 +877,11 @@ f.addEventListener('submit', (e) => {
   }
   // "place" the order
   const h = coState.slot;
-  const when = `${coState.day === 0 ? 'today' : coState.day === 1 ? 'tomorrow' : 'in 2 days'} between ${((h + 11) % 12) + 1}:00 and ${((h + 11) % 12) + 1}:30${h < 12 ? 'am' : 'pm'}`;
+  const dayWord = coState.day === 0 ? t('today') : coState.day === 1 ? t('tomorrow') : t('in 2 days');
+  const when = t('{day} between {a} and {b}', { day: dayWord, a: hourLabel(h), b: new Date(2020, 0, 1, h, 30).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' }) });
   const saved = cart.discount;
   lastOrder = cart.placeOrder({ when, street: f.street.value });
-  $('#doneText').innerHTML = `Order <b>${lastOrder.num}</b> · ${money(lastOrder.total)}${saved ? ` <span class="saved">(you saved ${money(saved)})</span>` : ''}<br />Arriving ${when} at ${esc(f.street.value)}.<br /><small>(Demo: no payment was taken.)</small>`;
+  $('#doneText').innerHTML = `${t('Order')} <b>${lastOrder.num}</b> · ${money(lastOrder.total)}${saved ? ` <span class="saved">(${t('you saved {v}', { v: money(saved) })})</span>` : ''}<br />${t('Arriving {when} at {street}.', { when, street: esc(f.street.value) })}<br /><small>(${t('Demo: no payment was taken.')})</small>`;
   f.hidden = true;
   $('#scratch').hidden = true;
   $('#coDone').hidden = false;
@@ -864,11 +898,12 @@ $('#trackOrderBtn').addEventListener('click', () => {
 
 // ============================================================ buy again / recently viewed
 let fyTab = 'again';
+const miniCard = (p) => `<article class="mc" data-id="${p.id}"><div class="mc-pic">${img(p)}</div><b>${esc(p.name)}</b><span class="mc-row"><span class="price">${money(p.price)}</span><button class="add sm" data-act="add" data-id="${p.id}" aria-label="${t('Add {name} to basket', { name: esc(p.name) })}">+</button></span></article>`;
 function renderForYou() {
   const counts = {};
   cart.orders.forEach((o) => o.items.forEach(([id, q]) => byId[id] && (counts[id] = (counts[id] || 0) + q)));
-  const again = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 12);
-  const viewed = cart.viewed.filter((id) => byId[id]);
+  const again = Object.keys(counts).filter((id) => !isBlocked(id)).sort((a, b) => counts[b] - counts[a]).slice(0, 12);
+  const viewed = cart.viewed.filter((id) => byId[id] && !isBlocked(id));
   if (fyTab === 'again' && !again.length && viewed.length) fyTab = 'viewed';
   const ids = fyTab === 'again' ? again : viewed;
   $('#forYou').hidden = !again.length && !viewed.length;
@@ -877,12 +912,12 @@ function renderForYou() {
     b.hidden = b.dataset.tab === 'again' ? !again.length : !viewed.length;
   });
   $('#reorderBtn').hidden = !cart.orders.length;
-  $('#fyRow').innerHTML = ids.map((id) => byId[id]).map((p) => `<article class="mc" data-id="${p.id}"><div class="mc-pic">${img(p)}</div><b>${esc(p.name)}</b><span class="mc-row"><span class="price">${money(p.price)}</span><button class="add sm" data-act="add" data-id="${p.id}" aria-label="Add ${esc(p.name)}">+</button></span></article>`).join('');
+  $('#fyRow').innerHTML = ids.map((id) => miniCard(byId[id])).join('');
 }
 $('#forYou').addEventListener('click', (e) => {
-  const t = e.target.closest('[data-tab]');
-  if (t) {
-    fyTab = t.dataset.tab;
+  const tb = e.target.closest('[data-tab]');
+  if (tb) {
+    fyTab = tb.dataset.tab;
     renderForYou();
   }
 });
@@ -890,10 +925,22 @@ $('#reorderBtn').addEventListener('click', () => {
   const o = cart.orders[0];
   if (!o) return;
   o.items.forEach(([id, q]) => cart.add(id, q));
-  toast(`Added your last basket (<b>${o.items.length} items</b>)`);
+  toast(t('Added your last basket (<b>{n} items</b>)', { n: o.items.length }));
   openDrawer();
 });
 renderForYou();
+
+// allergy warnings on things that stay visible (deals, bundles, the recipe)
+function markAllergens() {
+  $$('[data-al]').forEach((el) => (el.innerHTML = allergyHtml(el.dataset.al.split(' '))));
+}
+onPrefs(() => {
+  render();
+  renderForYou();
+  markAllergens();
+  if (!modal.hidden && mState.p) $('#mFresh').innerHTML = freshHtml(mState.p) + allergyHtml([mState.p.id]);
+});
+markAllergens();
 
 // ============================================================ credits
 $('#creditsBtn').addEventListener('click', async () => {
@@ -911,20 +958,32 @@ $('#footTrack').addEventListener('click', () => tracking.open());
 initWheel({ app, fab: $('#wheelFab'), modal: $('#wheel') });
 initSmoothie({ root: $('#smoothie'), app });
 initPlanner({ root: $('#planner'), app });
+initCook({ root: $('#cook'), app });
+initSubscribe({ root: $('#boxes'), app });
+initInsights({ app, root: $('#drawer'), cartBtn: $('#cartBtn') });
+const list = initList({ app, panel: $('#listPanel'), button: $('#listBtn'), search });
 initFarms({ app, row: $('#growers'), modal: $('#farmModal') });
 initStoreMap({ host: $('#storeMap'), app, CATEGORIES });
 initVoice({ app, button: $('#micBtn'), input: search });
 initSeason({ app, canvas: $('#seasonFx'), banner: $('#seasonBanner') });
-initActivity({ app, host: $('#activity'), busy: () => anyModalOpen() || drawer.classList.contains('open') });
+initActivity({ app, host: $('#activity'), busy: () => anyModalOpen() || drawer.classList.contains('open') || list.isOpen });
 initCursor({ reduced });
 const walk = initWalk({ section: $('#walk'), canvas: $('#walkCanvas'), tip: $('#walkTip'), nowEl: $('#walkNow'), ticksEl: $('#walkTicks'), app, CATEGORIES, PRODUCTS });
-initTheme({
+let settings = null;
+const theme = initTheme({
   button: $('#themeBtn'),
   onChange: (evening) => {
     hero.setNight(evening);
     walk.setNight(evening);
+    settings?.sync();
   },
 });
+const pwa = initPWA({
+  app,
+  urls: [...new Set(PRODUCTS.flatMap((p) => [`img/p/${p.img}.webp`, p.cut ? `img/c/${p.img}.webp` : null]).filter(Boolean).concat(['hero', 'farm', 'farmer', 'salad', 'store', 'delivery', 'breakfast', 'bbq'].map((s) => `img/s/${s}.webp`), ['img/credits.json', 'og.jpg']))].map((u) => new URL(BASE + u, location.href).href),
+});
+settings = initSettings({ app, modal: $('#prefs'), openers: [$('#prefsBtn')], theme, pwa });
+if (location.hash === '#list') list.open();
 
 // Escape closes the top-most layer
 addEventListener('keydown', (e) => {
@@ -951,10 +1010,10 @@ cart.emit({ type: 'init' });
 
 // keep every scroll animation lined up when content above it changes height (filters, planner, images)
 {
-  let t = 0;
+  let tm = 0;
   new ResizeObserver(() => {
-    clearTimeout(t);
-    t = setTimeout(() => ScrollTrigger.refresh(), 250);
+    clearTimeout(tm);
+    tm = setTimeout(() => ScrollTrigger.refresh(), 250);
   }).observe($('main'));
   addEventListener('load', () => ScrollTrigger.refresh());
 }

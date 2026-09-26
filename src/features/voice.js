@@ -1,4 +1,6 @@
 import { cart } from '../cart.js';
+import { findProduct } from '../match.js';
+import { prefs } from '../prefs.js';
 
 // Voice search using the browser's built-in speech recognition (Chrome, Edge, Safari).
 // Understands a few commands, otherwise it simply searches:
@@ -13,29 +15,14 @@ export function initVoice({ app, button, input }) {
     return;
   }
   const rec = new SR();
-  rec.lang = 'en-US';
+  rec.lang = { en: 'en-US', hi: 'hi-IN', es: 'es-ES' }[prefs.lang] || 'en-US';
   rec.interimResults = true;
   rec.maxAlternatives = 1;
   let listening = false;
   const wrap = button.closest('.search');
   const placeholder = input.placeholder;
 
-  const find = (words) => {
-    const w = words.toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!w) return null;
-    const stem = (s) => s.replace(/(ies)$/, 'y').replace(/(es|s)$/, '');
-    const ws = w.split(' ').map(stem).filter((x) => x.length > 2);
-    let best = null, score = 0;
-    for (const p of app.PRODUCTS) {
-      const hay = `${p.name} ${p.id}`.toLowerCase();
-      const s = ws.reduce((n, x) => n + (hay.includes(x) ? x.length : 0), 0);
-      if (s > score) {
-        score = s;
-        best = p;
-      }
-    }
-    return best;
-  };
+  const find = findProduct;
 
   function run(text) {
     const t = text.toLowerCase().trim().replace(/[.?!]$/, '');
@@ -45,18 +32,18 @@ export function initVoice({ app, button, input }) {
       const p = find(m[2]);
       if (p) {
         cart.add(p.id, q);
-        app.toast(`🎙️ Added ${q} × <b>${app.esc(p.name)}</b>`, p);
+        app.toast(`🎙️ ${app.t('Added {n} × <b>{name}</b>', { n: q, name: app.esc(p.name) })}`, p);
         return;
       }
     }
     m = t.match(/^(?:show|open|go to|take me to|browse)\s+(?:me\s+)?(?:the\s+)?(.+)$/);
     if (m) {
       const what = m[1].replace(/\s+(section|aisle|page|bar)$/, '');
-      const cat = app.CATEGORIES.find((c) => c.name.toLowerCase().includes(what) || c.id.startsWith(what.replace(/s$/, '')));
+      const cat = app.CATEGORIES.find((c) => c.name.toLowerCase().includes(what) || (c.alias || '').toLowerCase().includes(what) || c.id.startsWith(what.replace(/s$/, '')));
       if (cat) {
         app.setCat(cat.id);
         document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
-        app.toast(`🎙️ Showing <b>${cat.name}</b>`);
+        app.toast(`🎙️ ${app.t('Showing {cat}', { cat: `<b>${cat.name}</b>` })}`);
         return;
       }
       const place = PLACES[what.split(' ').find((x) => PLACES[x])];
@@ -79,8 +66,8 @@ export function initVoice({ app, button, input }) {
   };
   rec.onerror = (e) => {
     stop();
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') app.toast('🎙️ Microphone access was blocked');
-    else if (e.error === 'no-speech') app.toast('🎙️ Didn’t catch that. Try “add two bananas”');
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') app.toast(`🎙️ ${app.t('Microphone access was blocked')}`);
+    else if (e.error === 'no-speech') app.toast(`🎙️ ${app.t('Didn’t catch that. Try “add two bananas”')}`);
   };
   rec.onend = () => listening && stop();
   const stop = () => {
@@ -98,7 +85,7 @@ export function initVoice({ app, button, input }) {
     listening = true;
     wrap.classList.add('listening');
     input.value = '';
-    input.placeholder = 'Listening… try “add two bananas”';
+    input.placeholder = app.t('Listening… try “add two bananas”');
     try {
       rec.start();
     } catch {
