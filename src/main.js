@@ -3,6 +3,7 @@ import { t, locale, lang, translateDom } from './i18n.js';
 import './style.css';
 import './features.css';
 import './features2.css';
+import './ux.css';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { STORE, CATEGORIES, PRODUCTS, DEALS, BUNDLES, RECIPE, REVIEWS, byId } from './data.js';
@@ -34,9 +35,12 @@ import { initList } from './features/list.js';
 import { initSettings } from './features/settings.js';
 import { trend, sparkSvg, mountChart } from './features/pricehistory.js';
 import { initPWA } from './pwa.js';
+import { initSmooth } from './fx/smooth.js';
+import { initUX } from './features/ux.js';
 
 gsap.registerPlugin(ScrollTrigger);
 translateDom();
+const smooth = initSmooth({ reduced: reducedMotion() });
 const BASE = import.meta.env.BASE_URL;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -145,7 +149,7 @@ function confetti() {
 }
 
 // everything the feature modules need from the page
-const app = { BASE, reduced, esc, src, img, money, byId, PRODUCTS, CATEGORIES, catColor, tilt, toast, flyToCart, confetti, openProduct, setCat, openDrawer, t, locale, lang };
+const app = { scrollTo: smooth.scrollTo, BASE, reduced, esc, src, img, money, byId, PRODUCTS, CATEGORIES, catColor, tilt, toast, flyToCart, confetti, openProduct, setCat, openDrawer, t, locale, lang };
 
 // ============================================================ hero
 const hero = createHero({
@@ -271,6 +275,7 @@ const cardHtml = (p, i) => `
       <button class="icon-btn wish ${cart.wish.has(p.id) ? 'on' : ''}" data-act="wish" aria-label="${t('Save {name}', { name: esc(p.name) })}"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.4 5 6.9 5c2 0 3.6 1.2 5.1 3 1.5-1.8 3.1-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
       <button class="cmp-btn ${compare?.has(p.id) ? 'on' : ''}" data-act="cmp" aria-label="${t('Compare {name}', { name: esc(p.name) })}" title="${t('Compare')}">⇄</button>
       ${img(p)}
+      <button class="qa" data-act="add" data-id="${p.id}" tabindex="-1" aria-hidden="true">+ ${t('Add to basket')}</button>
     </div>
     <h3>${esc(p.name)}</h3>
     <span class="unit">${p.unit} · ${esc(p.origin)}</span>
@@ -609,6 +614,7 @@ function renderDrawer() {
   const items = cart.items;
   $('#lines').innerHTML = items.map(({ p, q }) => `<li class="line" data-id="${p.id}">${img(p)}<div><b>${esc(p.name)}</b><small>${p.unit} · ${money(p.price)}</small><div class="stepper"><button data-act="dec" aria-label="${t('Remove one')}">−</button><span>${q}</span><button data-act="inc" aria-label="${t('Add one')}">+</button></div></div><div class="lp">${money(p.price * q)}</div></li>`).join('');
   $('#drawerEmpty').hidden = items.length > 0;
+  if (!items.length) $('#emptyPicks').innerHTML = PRODUCTS.filter((p) => !isBlocked(p.id) && p.cut).sort((a, b) => b.reviews - a.reviews).slice(0, 3).map(miniCard).join('');
   $('#drawerFoot').hidden = items.length === 0;
   odo($('#subTotal'), money(cart.subtotal));
   $('#delFee').textContent = cart.delivery ? money(cart.delivery) : t('FREE');
@@ -968,6 +974,7 @@ initVoice({ app, button: $('#micBtn'), input: search });
 initSeason({ app, canvas: $('#seasonFx'), banner: $('#seasonBanner') });
 initActivity({ app, host: $('#activity'), busy: () => anyModalOpen() || drawer.classList.contains('open') || list.isOpen });
 initCursor({ reduced });
+initUX({ app, smooth });
 const walk = initWalk({ section: $('#walk'), canvas: $('#walkCanvas'), tip: $('#walkTip'), nowEl: $('#walkNow'), ticksEl: $('#walkTicks'), app, CATEGORIES, PRODUCTS });
 let settings = null;
 const theme = initTheme({

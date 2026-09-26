@@ -55,6 +55,17 @@ A 3D, interactive storefront for **Freshly**, a fictional neighbourhood grocery 
 - **Accessibility panel**: bigger text, high contrast, an easy-read font, reduce motion (turns off the 3D movement) and the evening theme.
 - Also respects the system `prefers-reduced-motion` setting and works on phones. Everything is saved in the browser (localStorage), so nothing needs a server.
 
+### Look and feel
+
+- **Momentum smooth scrolling** (mouse and trackpad) that stays in sync with every scroll animation.
+- **Colour journey**: the page background shifts softly per section, from warm market stall to berry pink, leafy green, fridge mint, bakery crust and morning sky.
+- **Statement lines**: huge promise lines whose words fill in as you scroll, with a hand-drawn underline.
+- **Richer product cards**: the product lifts and turns on hover, a quick-add bar slides up, and photos share one studio look (white mount, warm grade).
+- **Mobile bottom bar**: Home, Shop, Basket, My list and Settings, like a native app.
+- **Sticky mini-cart** on desktop with a free-delivery ring, and **section dots** on the right.
+- **Skeleton loading** shimmer while photos load, **illustrated empty states**, and squish, pop and wobble **micro-feedback**.
+- **Brand details**: a new logo mark, a rotating freshness stamp, trust badges and payment icons in the footer.
+
 Translations live in [src/i18n-dict.js](src/i18n-dict.js). The English text is the key, so adding a language means adding one more block.
 
 ## Run locally

@@ -1,5 +1,6 @@
 // Custom cursor (a dot plus a trailing ring that grows over anything clickable) and magnetic buttons.
 // Mouse / trackpad only; touch devices and reduced-motion users keep the normal cursor.
+import { t as tr } from '../i18n.js';
 const CLICKABLE = 'a, button, [role="button"], label.tgl, select, .card, .deal, .cat, .mc, .aisle, [data-cursor]:not([data-cursor=""])';
 const MAGNETS = '.btn, .add, .car-nav, .cart-btn, .icon-btn, .fab';
 
@@ -31,7 +32,7 @@ export function initCursor({ reduced }) {
     const text = t?.closest('input, textarea, select, [contenteditable]');
     const click = !text && t?.closest(CLICKABLE);
     // an element can ask for a word in the ring, e.g. "View" on products or "Squeeze!" on the hero fruit
-    const word = t?.closest('[data-cursor]:not([data-cursor=""])')?.dataset.cursor || (t?.closest('.card, .mc') ? 'View' : '');
+    const word = t?.closest('[data-cursor]:not([data-cursor=""])')?.dataset.cursor || (t?.closest('.card, .mc') && !t.closest('button') ? tr('View') : '');
     ring.classList.toggle('hover', !!click);
     ring.classList.toggle('word', !!word);
     ring.classList.toggle('text', !!text);

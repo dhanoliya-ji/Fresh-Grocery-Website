@@ -1,7 +1,7 @@
 // Freshly service worker: makes the store work offline and lets it be installed as an app.
 //  - pages: network first, falling back to the cached copy when offline
 //  - everything else (hashed scripts, styles, photos, fonts): served from cache, refreshed in the background
-const CACHE = 'freshly-v2';
+const CACHE = 'freshly-v3';
 const WARM = 'freshly-warm';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 

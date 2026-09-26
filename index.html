@@ -64,7 +64,7 @@
     <header class="header" id="header">
       <div class="wrap header-in">
         <a class="brand" href="#top" aria-label="Freshly Market home">
-          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="30" cy="38" r="20" fill="#e8453c" /><circle cx="24" cy="32" r="6" fill="#ff8a7a" opacity=".6" /><path d="M31 18c1-9 11-12 18-9-3 8-10 11-18 9z" fill="#2e9e5b" /></svg></span>
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="bmA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b5b" /><stop offset="1" stop-color="#d6322a" /></linearGradient><linearGradient id="bmB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a8f58" /><stop offset="1" stop-color="#17603a" /></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="18" fill="url(#bmB)" /><path d="M32 22c-4-3-12-3-15 3-4 7-1 19 6 24 3 2 6 2 9 0 3 2 6 2 9 0 7-5 10-17 6-24-3-6-11-6-15-3z" fill="url(#bmA)" /><path d="M22 30c1-3 3-4 5-4" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".7" /><path d="M32 22c0-5 2-8 5-10" stroke="#6b3e1f" stroke-width="2.6" stroke-linecap="round" fill="none" /><path d="M36 14c3-4 9-5 13-3-2 5-8 7-13 3z" fill="#8fe0a8" /></svg></span>
           <span class="brand-name">Freshly<small>Market</small></span>
         </a>
         <div class="deliver-pill" title="Estimated delivery time"><i class="dot"></i> Delivery in <b id="eta">28</b> min</div>
@@ -112,6 +112,7 @@
               <a class="btn btn-primary" href="#shop">Start shopping <span aria-hidden="true">→</span></a>
               <a class="btn btn-ghost" href="#walk">Take the store walk</a>
             </div>
+            <div class="stamp" id="stamp" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="stampPath" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0" /></defs><circle cx="60" cy="60" r="57" class="st-ring" /><circle cx="60" cy="60" r="33" class="st-core" /><g class="st-spin"><text><textPath href="#stampPath">FRESHNESS GUARANTEED · PICKED TODAY · LOCAL FARMS · </textPath></text></g><text x="60" y="57" class="st-big">100%</text><text x="60" y="72" class="st-small">FRESH</text></svg></div>
             <ul class="hero-stats">
               <li><b>1,200+</b><span>products</span></li>
               <li><b>4.9★</b><span>18k reviews</span></li>
@@ -135,6 +136,11 @@
       <section class="season-banner wrap" id="seasonBanner" aria-label="Seasonal picks">
         <div class="sb-head"><h3 class="sb-title"></h3><div class="sb-switch" aria-label="Preview another season"></div></div>
         <div class="sb-items"></div>
+      </section>
+
+      <section class="statement wrap" aria-label="Our promise">
+        <h2>Picked at 5 am. <em>At your door by 9.</em></h2>
+        <svg class="st-line" viewBox="0 0 600 30" preserveAspectRatio="none" aria-hidden="true"><path d="M5 20 C120 5 220 28 330 14 S520 6 595 18" pathLength="1" /></svg>
       </section>
 
       <!-- ================= CATEGORIES ================= -->
@@ -235,10 +241,16 @@
           <p class="result-count" id="resultCount"></p>
           <div class="grid" id="grid"></div>
           <div class="empty" id="empty" hidden>
+            <svg class="empty-art" viewBox="0 0 160 120" aria-hidden="true"><ellipse cx="80" cy="108" rx="52" ry="7" class="ea-shadow" /><g class="ea-bob"><path d="M70 34c-2-10 4-18 10-20-1 8 1 14-2 20z" fill="#2e9e5b" /><path d="M84 36c6-8 16-8 20-4-6 3-12 6-20 4z" fill="#57c285" /><path d="M78 36c14 0 18 8 14 22L82 98c-2 5-6 5-8 0L62 58c-4-14 2-22 16-22z" fill="#ff8a3d" /><path d="M70 52h10M68 66h9M72 80h7" stroke="#d9621e" stroke-width="3" stroke-linecap="round" /></g><circle cx="116" cy="52" r="18" class="ea-lens" /><path d="m129 65 14 14" class="ea-handle" /></svg>
             <p>🥕 Nothing matches those filters.</p>
             <button class="btn btn-ghost" id="clearFilters">Clear filters</button>
           </div>
         </div>
+      </section>
+
+      <section class="statement wrap" aria-label="Our promise">
+        <h2>Real food. <em>Really fast.</em> No warehouse in between.</h2>
+        <svg class="st-line" viewBox="0 0 600 30" preserveAspectRatio="none" aria-hidden="true"><path d="M5 18 C140 28 240 4 360 16 S520 26 595 10" pathLength="1" /></svg>
       </section>
 
       <!-- ================= SMOOTHIE BUILDER ================= -->
@@ -425,6 +437,11 @@
         </div>
       </section>
 
+      <section class="statement wrap" aria-label="Our promise">
+        <h2>120 farms. Zero middlemen. <em>One very fresh basket.</em></h2>
+        <svg class="st-line" viewBox="0 0 600 30" preserveAspectRatio="none" aria-hidden="true"><path d="M5 14 C150 26 260 6 380 18 S530 8 595 16" pathLength="1" /></svg>
+      </section>
+
       <!-- ================= REVIEWS ================= -->
       <section class="section reviews" id="reviews">
         <div class="wrap">
@@ -458,11 +475,16 @@
       <div class="wrap foot-in">
         <div>
           <a class="brand" href="#top"><span class="brand-name">Freshly<small>Market</small></span></a>
+          <p class="est">Est. 2019 · Brooklyn, NY</p>
           <p class="foot-note">A demo grocery store. Freshly Market is fictional; no real orders or payments are made.</p>
         </div>
         <div><b>Shop</b><a href="#shop" data-cat="fruits">Fruits</a><a href="#shop" data-cat="vegetables">Vegetables</a><a href="#shop" data-cat="bakery">Bakery</a><a href="#deals">Deals</a><a href="#recipe">Recipe of the day</a></div>
         <div><b>Explore</b><a href="#storemap">Store map</a><a href="#walk">Store walk</a><a href="#smoothie">Smoothie bar</a><a href="#planner">Meal planner</a><a href="#farms">Our growers</a></div>
         <div><b>Help</b><button class="linkish" data-open-prefs="lang">Language &amp; accessibility</button><a href="#how">Delivery areas</a><a href="#how">How it works</a><button class="linkish" id="footTrack">Track my order</button><span>Every day · 7 am – 11 pm</span><button class="linkish" id="creditsBtn">Photo credits</button></div>
+      </div>
+      <div class="wrap foot-trust">
+        <div class="ft-badges"><span class="ftb"><i>🌱</i>Certified organic partners</span><span class="ftb"><i>♻️</i>100% compostable packaging</span><span class="ftb"><i>⚡</i>Electric delivery vans</span><span class="ftb"><i>🛡️</i>Freshness guarantee</span></div>
+        <div class="ft-pay" aria-label="Payment methods"><span class="pay visa">VISA</span><span class="pay mc"><i></i><i></i></span><span class="pay amex">AMEX</span><span class="pay apple">Apple Pay</span><span class="pay gpay">G Pay</span><span class="pay snap">EBT</span></div>
       </div>
       <div class="wrap foot-bottom"><span>© <span id="year"></span> Freshly Market</span><span>Made with Three.js &amp; GSAP</span></div>
     </footer>
@@ -508,7 +530,13 @@
       </div>
       <div class="basket3d" aria-hidden="true"><div class="basket-back"></div><div class="basket-items" id="basketItems"></div><div class="basket-front"></div></div>
       <ul class="lines" id="lines"></ul>
-      <div class="drawer-empty" id="drawerEmpty"><p>Your basket is empty.</p><button class="btn btn-primary" id="startShopping">Start shopping</button></div>
+      <div class="drawer-empty" id="drawerEmpty">
+        <svg class="empty-art" viewBox="0 0 160 120" aria-hidden="true"><ellipse cx="80" cy="110" rx="56" ry="7" class="ea-shadow" /><path d="M40 52c0-26 80-26 80 0" fill="none" stroke="#a8733f" stroke-width="6" stroke-linecap="round" /><path d="M26 56h108l-12 44a8 8 0 0 1-8 6H46a8 8 0 0 1-8-6z" fill="#d8a56a" /><path d="M32 70h96M36 84h88" stroke="#b4804a" stroke-width="4" /><path d="M60 56l6 50M80 56v50M100 56l-6 50" stroke="#b4804a" stroke-width="4" /><rect x="22" y="50" width="116" height="10" rx="5" fill="#a8733f" /><g class="ea-leaf"><path d="M104 30c6-10 18-10 24-6-6 8-16 10-24 6z" fill="#57c285" /></g></svg>
+        <h4>Your basket is empty.</h4>
+        <p>Here are a few things people love this week:</p>
+        <div class="empty-picks" id="emptyPicks"></div>
+        <button class="btn btn-primary" id="startShopping">Start shopping</button>
+      </div>
       <footer class="drawer-foot" id="drawerFoot">
         <form class="promo-form" id="promoForm"><input id="promoInput" placeholder="Promo code" aria-label="Promo code" autocomplete="off" /><button class="btn btn-ghost sm" type="submit">Apply</button></form>
         <div class="promo-on" id="promoOn" hidden><span>🎁 <b id="promoLabel"></b></span><button class="linkish" id="promoRemove">Remove</button></div>
@@ -649,7 +677,7 @@
         <textarea id="listInput" rows="2" placeholder="milk, 2 bananas, bread…" aria-label="Add items to your list"></textarea>
         <div class="lf-row"><button type="button" class="mic-btn" id="listMic" aria-label="Say your list"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg><span>Say it</span></button><button class="btn btn-primary sm" type="submit">Add to list</button></div>
       </form>
-      <p class="list-empty" id="listEmpty">Type what you need, separated by commas. Items tick themselves off as they land in your basket. ✨</p>
+      <p class="list-empty" id="listEmpty"><svg class="empty-art" viewBox="0 0 160 120" aria-hidden="true"><ellipse cx="80" cy="112" rx="44" ry="6" class="ea-shadow" /><rect x="46" y="12" width="68" height="92" rx="8" fill="#fff" stroke="#e7dfd1" stroke-width="3" /><rect x="64" y="6" width="32" height="12" rx="4" fill="#2e9e5b" /><path d="M58 36h30M58 52h40M58 68h26" stroke="#d9d2c4" stroke-width="4" stroke-linecap="round" /><path class="ea-tick" d="M56 84l6 6 12-12" fill="none" stroke="#2e9e5b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pathLength="1" /><g class="ea-pencil"><path d="M116 38l10 10-34 34-13 3 3-13z" fill="#ffc94a" /><path d="M82 72l10 10" stroke="#c9a041" stroke-width="2" /></g></svg><span>Type what you need, separated by commas. Items tick themselves off as they land in your basket. ✨</span></p>
       <ul class="list-items" id="listItems"></ul>
       <footer class="list-foot">
         <div class="lp-prog"><span id="listProg"></span><div class="lp-bar"><i id="listBar"></i></div></div>
@@ -679,6 +707,21 @@
         </section>
       </div>
     </div>
+
+    <nav class="dots" id="dots" aria-label="Sections"></nav>
+
+    <button class="mini-cart" id="miniCart" aria-label="Open basket">
+      <svg class="mn-ring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="bg" /><circle cx="12" cy="12" r="9" class="fg" /></svg>
+      <span class="mn-count"></span><b class="mn-total"></b><span class="mn-free"></span><span class="mn-go">View basket →</span>
+    </button>
+
+    <nav class="bottom-bar" id="bottomBar" aria-label="Quick navigation">
+      <button data-tab="home" class="on"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" /></svg><span>Home</span></button>
+      <button data-tab="shop"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg><span>Shop</span></button>
+      <button data-tab="basket" class="bb-main"><span class="bb-cart"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6.2" /><circle cx="10" cy="20" r="1.4" /><circle cx="17" cy="20" r="1.4" /></svg><i class="bb-count"></i></span><span>Basket</span></button>
+      <button data-tab="list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11" /><path d="m3.5 6 1.2 1.2L6.8 5M3.5 12l1.2 1.2 2.1-2.2M3.5 18l1.2 1.2 2.1-2.2" /></svg><span>My list</span></button>
+      <button data-tab="more"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2.2" /><circle cx="9" cy="17" r="2.2" /></svg><span>Settings</span></button>
+    </nav>
 
     <div class="toasts" id="toasts" aria-live="polite"></div>
     <canvas id="confetti" aria-hidden="true"></canvas>

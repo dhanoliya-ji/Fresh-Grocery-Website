@@ -44,7 +44,8 @@ export function initWalk({ section, canvas, tip, nowEl, ticksEl, app, CATEGORIES
     const b = e.target.closest('[data-i]');
     if (!b) return;
     const k = (+b.dataset.i + 0.35) / N;
-    scrollTo({ top: st.start + (st.end - st.start) * k, behavior: 'smooth' });
+    const y = st.start + (st.end - st.start) * k;
+    app.scrollTo ? app.scrollTo(y, { offset: 0 }) : scrollTo({ top: y, behavior: 'smooth' });
   });
 
   // ---------------- renderer (built lazily, just before the section scrolls into view) ----------------
