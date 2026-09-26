@@ -1,0 +1,28 @@
+Copyright (c) 2026 dhanoliya-ji. All rights reserved.
+
+This repository and its contents, including the source code, design, text and
+3D scenes of the Freshly Market website, are the property of the copyright
+holder.
+
+You may view the code on GitHub and visit the published website. No other
+permission is granted. Without prior written permission from the copyright
+holder, you may not:
+
+  - copy, reproduce or download the code for reuse;
+  - modify it or create derivative works based on it;
+  - distribute, publish, sublicense or sell it, in whole or in part;
+  - use it, or any part of it, in another website, app or product,
+    whether commercial or non-commercial.
+
+Third-party material is excluded from this notice. The product and scene
+photographs in public/img are used under their own licenses (CC0, public
+domain or Creative Commons), as listed in public/img/credits.json. Open-source
+libraries in package.json (such as Three.js, GSAP and Lenis) remain under
+their respective licenses.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+For permission requests, contact the copyright holder through GitHub:
+https://github.com/dhanoliya-ji
